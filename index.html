@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>קרן סיוע</title>
+<meta name="description" content="מערכת ניהול קרן סיוע – מעשרות, הלוואות, פדיון">
+<meta name="theme-color" content="#c9a84c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="קרן סיוע">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&family=Frank+Ruhl+Libre:wght@300;400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #181b24;
+  --surface2: #1f2334;
+  --border: #2a2f45;
+  --gold: #c9a84c;
+  --gold2: #e8c97a;
+  --teal: #2ec4b6;
+  --red: #e05260;
+  --green: #3cb371;
+  --blue: #4a90d9;
+  --purple: #7c5cbf;
+  --text: #e8e8f0;
+  --muted: #7a7f9a;
+  --radius: 14px;
+  --nav-h: 62px;
+  --header-h: 52px;
+}
+body.light-mode {
+  --bg:#f0f2f8; --surface:#ffffff; --surface2:#e8ecf5; --border:#c8cfe0;
+  --text:#1a1d2e; --muted:#5a6080; --gold2:#8a6010;
+  --teal:#1a9e96; --red:#c03040; --green:#277a4c; --blue:#2a6eb0; --purple:#5c3ea0;
+}
+body.light-mode { background:var(--bg) !important; color:var(--text) !important; }
+body.light-mode header { background:#fff !important; border-bottom-color:var(--border) !important; }
+body.light-mode main { background:var(--bg) !important; }
+body.light-mode .kpi,body.light-mode .chart-box,body.light-mode .person-card,
+body.light-mode .person-item,body.light-mode .table-wrap,body.light-mode .tithe-card,
+body.light-mode .modal,body.light-mode .bottom-nav,body.light-mode .main-menu-panel,
+body.light-mode .settings-drawer,body.light-mode .summary-bar {
+  background:var(--surface) !important; border-color:var(--border) !important; }
+body.light-mode th { background:var(--surface2) !important; color:var(--muted) !important; }
+body.light-mode td { color:var(--text) !important; background:var(--surface) !important; }
+body.light-mode tr:nth-child(even) td { background:#f5f7fc !important; }
+body.light-mode .kpi-label,.light-mode .chart-title,.light-mode .tithe-card-title,
+body.light-mode .section-title { color:var(--muted) !important; }
+body.light-mode .section-title { color:var(--gold2) !important; }
+body.light-mode .modal-title,.light-mode .logo { color:var(--gold2) !important; }
+body.light-mode .logo small,.light-mode .nav-item,.light-mode .chart-title,
+body.light-mode .kpi-label,.light-mode .person-row .label,.light-mode .tithe-card-title,
+body.light-mode .main-menu-title { color:var(--muted) !important; }
+body.light-mode .nav-item.active,.light-mode .main-menu-item.active { color:var(--gold2) !important; }
+body.light-mode .main-menu-item { color:var(--text) !important; }
+body.light-mode .sub-tab { color:var(--muted) !important; border-color:var(--border) !important; background:var(--surface2) !important; }
+body.light-mode .sub-tab.active { background:var(--gold) !important; color:#111 !important; }
+body.light-mode .form-group input,body.light-mode .form-group select,body.light-mode .form-group textarea {
+  background:var(--surface2) !important; color:var(--text) !important; border-color:var(--border) !important; }
+body.light-mode .btn-secondary { background:var(--surface2) !important; color:var(--text) !important; border-color:var(--border) !important; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Heebo', sans-serif;
+  overflow-x: hidden;
+  font-size: 15px;
+}
+
+/* ---- Header ---- */
+header {
+  background: linear-gradient(135deg, #1a1d2e 0%, #0f1117 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+}
+.logo { font-family: 'Frank Ruhl Libre', serif; font-size: 20px; font-weight: 700; color: var(--gold2); }
+.logo small { color: var(--muted); font-size: 11px; font-family: 'Heebo', sans-serif; font-weight: 300; display: block; line-height: 1; }
+.settings-btn {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px;
+  transition: all 0.15s;
+}
+.settings-btn:hover, .settings-btn.open { color: var(--gold2); border-color: var(--gold); }
+
+/* ---- Settings Drawer ---- */
+.settings-drawer {
+  position: fixed;
+  bottom: var(--nav-h);left:0;right:0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 14px 16px 20px;
+  z-index: 195;
+  transform: translateY(110%);
+  transition: transform 0.25s ease;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.4);
+}
+.settings-drawer.open { transform: translateY(0); }
+.sd-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.settings-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.settings-row + .settings-row { margin-top: 10px; }
+.settings-row span { min-width: 80px; }
+.settings-row input[type=number] {
+  width: 56px;
+  background: var(--surface2);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  color: var(--gold2);
+  font-family: 'Heebo', sans-serif;
+  font-size: 15px; font-weight: 700;
+  text-align: center;
+  padding: 5px 4px;
+  outline: none;
+}
+
+/* ---- Bottom Nav ---- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: stretch;
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  transition: color 0.15s;
+  padding: 8px 2px;
+  border: none; background: none;
+  position: relative;
+}
+.nav-item .nav-icon { font-size: 20px; line-height: 1; }
+.nav-item.active { color: var(--gold2); }
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--gold2);
+  border-radius: 0 0 3px 3px;
+}
+/* FAB add button */
+.nav-fab {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #111;
+  font-size: 28px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(201,168,76,0.5);
+  margin-bottom: 12px;
+  flex-shrink: 0;
+  transition: transform 0.15s, background 0.15s;
+  line-height: 1;
+}
+.nav-fab:active { transform: scale(0.93); background: var(--gold2); }
+/* Main menu panel */
+.main-menu-panel {
+  position: fixed;
+  bottom: var(--nav-h);
+  left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  z-index: 190;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+  border-radius: 20px 20px 0 0;
+  padding: 8px 0 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.main-menu-panel.open { transform: translateY(0); }
+.main-menu-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 4px 20px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.main-menu-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 20px;
+  cursor: pointer;
+  font-size: 15px; font-weight: 500;
+  color: var(--text);
+  transition: background 0.12s;
+}
+.main-menu-item span { font-size: 20px; }
+.main-menu-item:active { background: rgba(255,255,255,0.05); }
+.main-menu-item.active { color: var(--gold2); background: rgba(201,168,76,0.07); }
+/* Settings drawer triggered from bottom */
+#nav-settings-btn.active { color: var(--gold2); }
+/* more button */
+.nav-more-panel {
+  position: fixed;
+  bottom: var(--nav-h);
+  left: 0; right: 0;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  z-index: 190;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+}
+.nav-more-panel.open { transform: translateY(0); }
+.nav-more-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 16px 8px;
+  cursor: pointer; font-size: 11px; color: var(--muted);
+  border-right: 1px solid var(--border);
+  transition: all 0.15s;
+}
+.nav-more-item:last-child { border-right: none; }
+.nav-more-item .nav-icon { font-size: 22px; }
+.nav-more-item.active { color: var(--gold2); background: rgba(201,168,76,0.08); }
+.nav-more-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.more-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 185;
+}
+.more-overlay.open { display: block; }
+
+/* ---- Main scroll area ---- */
+main {
+  padding: 12px 12px calc(var(--nav-h) + 24px);
+  margin-top: var(--header-h);
+  overflow-y: auto;
+  min-height: calc(100vh - var(--header-h));
+}
+.page { display: none; }
+.page.active { display: block; }
+
+/* ---- KPI grid ---- */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 12px 12px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.kpi.gold::after { background: var(--gold); }
+.kpi.teal::after { background: var(--teal); }
+.kpi.red::after { background: var(--red); }
+.kpi.green::after { background: var(--green); }
+.kpi.blue::after { background: var(--blue); }
+.kpi.purple::after { background: var(--purple); }
+.kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+.kpi-value { font-size: 20px; font-weight: 800; line-height: 1; }
+.kpi.gold .kpi-value { color: var(--gold2); }
+.kpi.teal .kpi-value { color: var(--teal); }
+.kpi.red .kpi-value { color: var(--red); }
+.kpi.green .kpi-value { color: var(--green); }
+.kpi.blue .kpi-value { color: var(--blue); }
+.kpi.purple .kpi-value { color: var(--purple); }
+.kpi-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+/* ---- Charts ---- */
+.charts-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+.chart-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.chart-title { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+.chart-box canvas { max-height: 200px; }
+
+/* ---- Person cards ---- */
+.persons-grid { display: flex; flex-direction: column; gap: 10px; }
+.person-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.person-name { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.person-name .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.person-rows { display: flex; flex-direction: column; gap: 7px; }
+.person-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.person-row .label { color: var(--muted); }
+.person-row .val { font-weight: 700; }
+.person-row .val.pos { color: var(--green); }
+.person-row .val.neg { color: var(--red); }
+.person-row .val.gold { color: var(--gold2); }
+
+/* ---- Section layout ---- */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-title { font-family: 'Frank Ruhl Libre', serif; font-size: 18px; font-weight: 700; color: var(--gold2); }
+
+/* ---- Buttons ---- */
+.btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-primary { background: var(--gold); color: #111; }
+.btn-primary:active { background: var(--gold2); transform: scale(0.97); }
+.btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); font-size: 12px; padding: 5px 10px; border-radius: 7px; }
+.btn-danger:active { background: var(--red); color: #fff; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+/* ---- Table ---- */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table{width:100%;border-collapse:collapse;}
+th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:5px 6px;text-align:right;white-space:nowrap;}
+td{padding:5px 6px;font-size:12px;border-top:1px solid var(--border);}
+tr:active td{background:rgba(255,255,255,0.03);}
+.act-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:13px;border:none;cursor:pointer;background:transparent;margin-left:2px;vertical-align:middle;}
+.act-edit{color:var(--teal);border:1px solid var(--teal);}
+.act-edit:active{background:var(--teal);color:#111;}
+.act-del{color:var(--red);border:1px solid var(--red);}
+.act-del:active{background:var(--red);color:#fff;}
+
+/* ---- Cards list (mobile-friendly alternative to table) ---- */
+.card-list { display: flex; flex-direction: column; gap: 8px; }
+.record-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.record-card-main { flex: 1; min-width: 0; }
+.record-card-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.record-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.record-card-amount { font-size: 16px; font-weight: 800; white-space: nowrap; }
+.record-card-actions { display: flex; align-items: center; gap: 6px; }
+
+/* ---- Badge ---- */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-green { background: rgba(60,179,113,0.15); color: var(--green); }
+.badge-red { background: rgba(224,82,96,0.15); color: var(--red); }
+.badge-gold { background: rgba(201,168,76,0.15); color: var(--gold2); }
+.badge-blue { background: rgba(74,144,217,0.15); color: var(--blue); }
+
+/* ---- Modal ---- */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 500;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+.modal-title { font-family: 'Frank Ruhl Libre', serif; font-size: 19px; font-weight: 700; color: var(--gold2); margin-bottom: 18px; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Heebo', sans-serif;
+  font-size: 16px;
+  padding: 11px 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+.form-group input[type=checkbox] {
+  width: 20px; height: 20px;
+  min-width: 20px;
+  background: var(--surface2);
+  border: 2px solid var(--gold);
+  border-radius: 5px;
+  cursor: pointer;
+  accent-color: var(--gold);
+  padding: 0;
+  flex-shrink: 0;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+.modal-actions .btn { flex: 1; justify-content: center; padding: 13px; font-size: 15px; }
+
+/* ---- Sub-tabs ---- */
+.sub-tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
+.sub-tabs::-webkit-scrollbar { display: none; }
+.sub-tab {
+  padding: 7px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.sub-tab.active { background: var(--gold); color: #111; border-color: var(--gold); }
+
+/* ---- Summary bar ---- */
+.summary-bar {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.summary-item .s-label { color: var(--muted); margin-left: 4px; }
+.summary-item .s-val { font-weight: 700; }
+.summary-item .s-val.gold { color: var(--gold2); }
+.summary-item .s-val.green { color: var(--green); }
+.summary-item .s-val.red { color: var(--red); }
+
+/* ---- Salary grid ---- */
+.sg-cell {
+  padding: 7px 8px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  text-align: center;
+  white-space: nowrap;
+}
+.sg-cell:first-child { text-align: right; font-weight: 600; }
+.sg-head { background: var(--surface2); color: var(--muted); font-size: 10px; font-weight: 600; }
+.sg-total { font-weight: 700; color: var(--gold2); background: rgba(201,168,76,0.07); }
+.sg-edit { cursor: pointer; }
+.sg-edit:active { background: rgba(255,255,255,0.06); }
+
+/* ---- Persons manage ---- */
+.persons-list { display: flex; flex-direction: column; gap: 8px; }
+.person-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.person-item-name { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.person-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.person-item-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.person-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ---- Tithe cards ---- */
+.tithe-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.tithe-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+}
+.tithe-card-title { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.tithe-amount { font-size: 22px; font-weight: 800; color: var(--gold2); }
+.tithe-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+.empty { text-align: center; color: var(--muted); padding: 36px 20px; font-size: 14px; }
+
+/* ---- Desktop overrides ---- */
+@media (min-width: 600px) {
+  main { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .charts-grid { display: grid; grid-template-columns: 2fr 1fr; }
+  .persons-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
+  .tithe-breakdown { grid-template-columns: repeat(4, 1fr); }
+  .chart-box canvas { max-height: 240px; }
+  .bottom-nav { display: none; }
+  /* Desktop top tabs instead */
+  .desktop-tabs {
+    display: flex !important;
+    gap: 2px;
+    padding: 14px 16px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+    position: sticky;
+    top: var(--header-h);
+    z-index: 150;
+  }
+  .desktop-tab {
+    padding: 9px 16px;
+    border-radius: 9px 9px 0 0;
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-bottom: none;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .desktop-tab:hover { color: var(--text); background: var(--surface2); }
+  .desktop-tab.active {
+    color: var(--gold2);
+    background: var(--bg);
+    border-color: var(--border);
+    border-bottom-color: var(--bg);
+    margin-bottom: -1px;
+  }
+  .modal { border-radius: 16px; max-width: 480px; margin: auto; }
+  .modal-overlay { align-items: center; }
+  main { margin-bottom: 0; }
+  .settings-drawer { display: none; }
+  header .settings-btn { display: none; }
+  .header-settings-inline { display: flex !important; }
+}
+.desktop-tabs { display: none; }
+.header-settings-inline {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.header-settings-inline input[type=number] {
+  width: 46px;
+  background: var(--surface2);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  color: var(--gold2);
+  font-size: 13px; font-weight: 700;
+  text-align: center;
+  padding: 3px 4px;
+  outline: none;
+  font-family: 'Heebo', sans-serif;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">קרן סיוע<small>מערכת ניהול</small></div>
+  <div class="header-settings-inline">
+    <span>מעשרות:</span>
+    <input type="number" id="titheRateD" value="20" min="1" max="100" onchange="syncSettings('titheRateD')"> <span>%</span>
+    <span style="margin-right:8px">תרומה:</span>
+    <input type="number" id="donationRateD" value="50" min="0" max="100" onchange="syncSettings('donationRateD')"> <span>%+</span>
+    <input type="number" id="donationPeriodRateD" value="50" min="0" max="100" onchange="syncSettings('donationPeriodRateD')"> <span>%</span>
+  </div>
+  <div class="settings-btn" id="settings-btn-toggle" onclick="toggleSettings()">⚙️</div>
+</header>
+
+<div class="more-overlay" id="settings-overlay" onclick="toggleSettings()"></div>
+<div class="settings-drawer" id="settings-drawer">
+  <div class="sd-handle"></div>
+  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">הגדרות</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px">
+    <span style="font-size:14px;font-weight:600;color:var(--text)">מצב תצוגה</span>
+    <div style="display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div id="theme-dark" onclick="setTheme('dark')" style="padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--gold);color:#111">🌙 כהה</div>
+      <div id="theme-light" onclick="setTheme('light')" style="padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--muted)">☀️ בהיר</div>
+    </div>
+  </div>
+  <div class="settings-row">
+    <span>מעשרות:</span>
+    <input type="number" id="titheRate" value="20" min="1" max="100" onchange="syncSettings('titheRate')">
+    <span>%</span>
+  </div>
+  <div class="settings-row" style="margin-top:10px">
+    <span>תרומה:</span>
+    <input type="number" id="donationRate" value="50" min="0" max="100" onchange="syncSettings('donationRate')">
+    <span>% מתוספת +</span>
+    <input type="number" id="donationPeriodRate" value="50" min="0" max="100" onchange="syncSettings('donationPeriodRate')">
+    <span>% מקופה</span>
+  </div>
+  <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">ניהול נתונים</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="exportData()" style="width:100%;padding:10px;border-radius:10px;background:rgba(46,196,182,0.1);color:var(--teal);border:1px solid var(--teal);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📤 ייצוא נתונים (JSON)</button>
+      <button onclick="document.getElementById('import-file').click()" style="width:100%;padding:10px;border-radius:10px;background:rgba(74,144,217,0.1);color:var(--blue);border:1px solid var(--blue);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📥 ייבוא נתונים (JSON)</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      <button onclick="hardReset()" style="width:100%;padding:10px;border-radius:10px;background:rgba(224,82,96,0.1);color:var(--red);border:1px solid var(--red);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">🗑️ מחיקת כל הנתונים</button>
+    </div>
+  </div>
+</div>
+
+<div class="desktop-tabs">
+  <div class="desktop-tab active" onclick="showPage('dashboard',this)">📊 דשבורד</div>
+  <div class="desktop-tab" onclick="showPage('income',this)">💰 הכנסות</div>
+  <div class="desktop-tab" onclick="showPage('tithe',this)">✡️ מעשרות</div>
+  <div class="desktop-tab" onclick="showPage('loans',this)">📋 הלוואות</div>
+  <div class="desktop-tab" onclick="showPage('redemption',this)">🔓 פדיון</div>
+  <div class="desktop-tab" onclick="showPage('donations',this)">🕍 הנצחה</div>
+  <div class="desktop-tab" onclick="showPage('misc',this)">💸 תוספות</div>
+  <div class="desktop-tab" onclick="showPage('persons',this)">👥 אנשים</div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-menu" onclick="toggleMainMenu()"><span class="nav-icon">☰</span>תפריט</button>
+  <button class="nav-fab" id="nav-add" onclick="openAddIncomeModal()" title="הוספת הכנסה">＋</button>
+  <button class="nav-item" id="nav-settings-btn" onclick="toggleSettings()"><span class="nav-icon">⚙️</span>הגדרות</button>
+</nav>
+
+<!-- MAIN MENU PANEL -->
+<div class="more-overlay" id="menu-overlay" onclick="closeMainMenu()"></div>
+<div class="main-menu-panel" id="main-menu-panel">
+  <div class="main-menu-title">תפריט</div>
+  <div class="main-menu-item active" id="menuitem-dashboard" onclick="showPage('dashboard');closeMainMenu()"><span>📊</span>דשבורד</div>
+  <div class="main-menu-item" id="menuitem-income" onclick="showPage('income');closeMainMenu()"><span>💰</span>הכנסות</div>
+  <div class="main-menu-item" id="menuitem-tithe" onclick="showPage('tithe');closeMainMenu()"><span>✡️</span>מעשרות</div>
+  <div class="main-menu-item" id="menuitem-loans" onclick="showPage('loans');closeMainMenu()"><span>📋</span>הלוואות</div>
+  <div class="main-menu-item" id="menuitem-redemption" onclick="showPage('redemption');closeMainMenu()"><span>🔓</span>פדיון</div>
+  <div class="main-menu-item" id="menuitem-donations" onclick="showPage('donations');closeMainMenu()"><span>🕍</span>הנצחה</div>
+  <div class="main-menu-item" id="menuitem-misc" onclick="showPage('misc');closeMainMenu()"><span>💸</span>תוספות</div>
+  <div class="main-menu-item" id="menuitem-persons" onclick="showPage('persons');closeMainMenu()"><span>👥</span>אנשים</div>
+</div>
+
+<main>
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="kpi-grid" id="kpi-grid"></div>
+  <div class="charts-grid">
+    <div class="chart-box">
+      <div class="chart-title">הכנסות לאורך שנים (עבודה)</div>
+      <canvas id="chartIncome"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">חלוקת הכנסות נוספות</div>
+      <canvas id="chartSources"></canvas>
+    </div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-box">
+      <div class="chart-title">קופה אישית לפי שם</div>
+      <canvas id="chartKupa"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">הלוואות vs החזרים</div>
+      <canvas id="chartLoans"></canvas>
+    </div>
+  </div>
+  <div class="persons-grid" id="persons-summary"></div>
+</div>
+
+<!-- INCOME -->
+<div class="page" id="page-income">
+  <div class="section-header">
+    <div class="section-title">תוספות</div>
+  </div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="showSubTab('income','salary')">💼 משכורות</div>
+    <div class="sub-tab" onclick="showSubTab('income','shonot')">📦 תוספות</div>
+  </div>
+  <!-- SALARY -->
+  <div id="income-salary">
+    <div class="section-header">
+      <div style="color:var(--muted);font-size:13px">בחר שנה לעריכה</div>
+      <button class="btn btn-primary" onclick="addSalaryRow()">+ שנה חדשה</button>
+    </div>
+    <div id="salary-years-grid"></div>
+  </div>
+  <!-- SHONOT -->
+  <div id="income-shonot" style="display:none">
+    <div class="section-header">
+      <div style="display:flex;gap:6px;align-items:center">
+        <button onclick="toggleCatPanel('shonot')" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer" id="shonot-cat-toggle-btn">🏷️ סינון</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" onclick="openModal('modal-manage-categories')">📂</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary" onclick="openAddShonotModal()">+ הוסף</button>
+      </div>
+    </div>
+    <div id="shonot-cat-panel" style="display:none;margin-bottom:10px">
+      <div id="shonot-cat-buttons" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)"></div>
+    </div>
+    <div id="shonot-summary-bar" class="summary-bar" style="margin-bottom:10px"></div>
+    <div class="table-wrap table-scroll"><table><thead id="shonot-thead"><tr><th>קטגוריה</th><th>תיאור</th><th>תאריך</th><th>סכום</th><th>מעשרות</th><th></th></tr></thead><tbody id="shonot-tbody"></tbody></table></div>
+  </div>
+
+</div>
+
+<!-- TITHE -->
+<div class="page" id="page-tithe">
+  <div class="section-header">
+    <div class="section-title">מעשרות</div>
+    <button class="btn btn-primary" onclick="openModal('modal-tithe-dist')">+ חלוקה</button>
+  </div>
+  <div class="tithe-breakdown" id="tithe-breakdown"></div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="showSubTab('tithe','tithe-summary')">סיכום</div>
+    <div class="sub-tab" onclick="showSubTab('tithe','tithe-history')">היסטוריה</div>
+  </div>
+  <div id="tithe-summary">
+    <div class="table-wrap table-scroll">
+      <table>
+        <thead><tr><th>שם</th><th>מעשרות</th><th>תוספות</th><th>סה"כ</th><th>נפדה</th><th>יתרה</th><th>תרומה</th></tr></thead>
+        <tbody id="tithe-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="tithe-history" style="display:none">
+    <div class="table-wrap table-scroll">
+      <table>
+        <thead><tr><th>תאריך</th><th>סכום כולל</th><th>מקבלים</th><th>לכל אחד</th><th></th></tr></thead>
+        <tbody id="tithe-hist-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LOANS -->
+<div class="page" id="page-loans">
+  <div class="section-header">
+    <div class="section-title">הלוואות והחזרים</div>
+    <button class="btn btn-primary" onclick="openModal('modal-loan')">+ הלוואה חדשה</button>
+  </div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="showSubTab('loans','all-loans')">הלוואות</div>
+    <div class="sub-tab" onclick="showSubTab('loans','repayments')">החזרים</div>
+    <div class="sub-tab" onclick="showSubTab('loans','balance')">יתרות</div>
+  </div>
+  <div id="all-loans">
+    <div class="table-wrap table-scroll">
+      <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="loans-tbody"></tbody></table>
+    </div>
+  </div>
+  <div id="repayments" style="display:none">
+    <div class="section-header">
+      <div></div>
+      <button class="btn btn-primary" onclick="openModal('modal-repay')">+ הוסף החזר</button>
+    </div>
+    <div class="table-wrap table-scroll">
+      <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="repay-tbody"></tbody></table>
+    </div>
+  </div>
+  <div id="balance" style="display:none">
+    <div class="table-wrap">
+      <table><thead><tr><th>שם</th><th>סה"כ הלוואות</th><th>סה"כ החזרים</th><th>יתרת חוב</th></tr></thead><tbody id="balance-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- REDEMPTION -->
+<div class="page" id="page-redemption">
+  <div class="section-header">
+    <div class="section-title">פדיון</div>
+    <button class="btn btn-primary" onclick="openModal('modal-redeem')">+ פדיון חדש</button>
+  </div>
+  <div class="table-wrap table-scroll">
+    <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="redeem-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- DONATIONS -->
+<div class="page" id="page-donations">
+  <div class="section-header">
+    <div class="section-title">הנצחה ותרומות</div>
+    <button class="btn btn-primary" onclick="openModal('modal-donation')">+ תרומה חדשה</button>
+  </div>
+  <div id="donation-calc" style="margin-bottom:20px"></div>
+  <div class="table-wrap table-scroll">
+    <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="donation-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- MISC / TOSFOT -->
+<div class="page" id="page-misc">
+  <div class="section-header">
+    <div class="section-title">תוספות – חלוקה ישירה 100%</div>
+    <button class="btn btn-primary" onclick="openAddNosefModal()">+ הוסף</button>
+  </div>
+  <div class="summary-bar" id="tosfot-summary-bar"></div>
+  <div style="margin-bottom:10px">
+    <button onclick="toggleCatPanel('nosef2')" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer" id="nosef2-cat-toggle-btn">🏷️ סינון קטגוריה</button>
+  </div>
+  <div id="nosef2-cat-panel" style="display:none;margin-bottom:10px">
+    <div id="nosef2-cat-buttons" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)"></div>
+  </div>
+  <div class="table-wrap table-scroll">
+    <table><thead id="tosfot-thead"><tr><th>קטגוריה</th><th>תאריך</th><th>סכום</th><th>מקבלים</th><th></th></tr></thead><tbody id="tosfot-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- PERSONS -->
+<div class="page" id="page-persons">
+  <div class="section-header">
+    <div class="section-title">ניהול אנשים</div>
+    <button class="btn btn-primary" onclick="openPersonModal()">+ הוסף אדם</button>
+  </div>
+  <div class="persons-list" id="persons-list"></div>
+</div>
+</main>
+
+<!-- ADD INCOME QUICK MODAL -->
+<div class="modal-overlay" id="modal-add-income">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ הוספת הכנסה</div>
+    <div class="form-group">
+      <label>סוג הכנסה</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div id="inc-type-salary" onclick="selectIncType('salary')" style="padding:10px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:all 0.15s">💼 משכורת</div>
+        <div id="inc-type-shonot" onclick="selectIncType('shonot')" style="padding:10px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:all 0.15s">📦 תוספות (20%)</div>
+        <div id="inc-type-nosef" onclick="selectIncType('nosef')" style="padding:10px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:all 0.15s">💸 חלוקה ישירה (100%)</div>
+      </div>
+    </div>
+    <div id="inc-salary-fields" style="display:none">
+      <div class="form-row">
+        <div class="form-group"><label>שנה</label><select id="inc-sal-year"></select></div>
+        <div class="form-group"><label>חודש</label><select id="inc-sal-month">
+          <option value="0">ינואר</option><option value="1">פברואר</option><option value="2">מרס</option>
+          <option value="3">אפריל</option><option value="4">מאי</option><option value="5">יוני</option>
+          <option value="6">יולי</option><option value="7">אוגוסט</option><option value="8">ספטמבר</option>
+          <option value="9">אוקטובר</option><option value="10">נובמבר</option><option value="11">דצמבר</option>
+        </select></div>
+      </div>
+      <div class="form-group"><label>סכום (₪)</label><input type="number" id="inc-sal-amount"></div>
+    </div>
+    <div id="inc-other-fields" style="display:none">
+      <div id="inc-shonot-cat-group" class="form-group" style="display:none"><label>קטגוריה</label><select id="inc-shonot-cat" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:Heebo,sans-serif;font-size:16px;padding:11px 13px;outline:none;-webkit-appearance:none"></select></div>
+      <div class="form-group"><label>תיאור</label><input type="text" id="inc-other-desc"></div>
+      <div class="form-row">
+        <div class="form-group"><label>תאריך</label><input type="date" id="inc-other-date"></div>
+        <div class="form-group"><label>סכום (₪)</label><input type="number" id="inc-other-amount" oninput="updateTithePreview()"></div>
+      </div>
+    </div>
+    <!-- Tithe split section -->
+    <div id="inc-tithe-section" style="display:none;margin-top:4px">
+      <div style="background:rgba(201,168,76,0.08);border:1px solid var(--gold);border-radius:10px;padding:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--gold2);margin-bottom:10px">✡️ חלוקת מעשרות</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">מעשרות על הכנסה זו: <span id="tithe-preview-amt" style="color:var(--gold2);font-weight:700"></span></div>
+        <div id="tithe-split-mode" style="display:flex;gap:8px;margin-bottom:10px">
+          <div id="tsplit-equal" onclick="setTitheSplitMode('equal')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--gold);background:rgba(201,168,76,0.1);cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--gold2)">שווה בשווה</div>
+          <div id="tsplit-custom" onclick="setTitheSplitMode('custom')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--muted)">בחירה ידנית</div>
+        </div>
+        <div id="tsplit-equal-preview" style="font-size:12px;color:var(--muted)"></div>
+        <div id="tsplit-custom-fields" style="display:none"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-income')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveQuickIncome()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- SHONOT MODAL -->
+<div class="modal-overlay" id="modal-shonot">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="shonot-modal-title">הוספת שונות</div>
+    <div class="form-group">
+      <label>קטגוריה</label>
+      <select id="shonot-cat-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:Heebo,sans-serif;font-size:16px;padding:11px 13px;outline:none;-webkit-appearance:none"></select>
+    </div>
+    <div class="form-group"><label>תיאור (אופציונלי)</label><input type="text" id="shonot-desc"></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="shonot-date"></div>
+      <div class="form-group"><label>סכום (₪)</label><input type="number" id="shonot-amount" oninput="updateShonotPreview()"></div>
+    </div>
+    <div id="shonot-tithe-preview" style="background:rgba(201,168,76,0.08);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted);display:none">
+      מעשרות: <span id="shonot-tithe-amt" style="color:var(--gold2);font-weight:700"></span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-shonot')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveShonot()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOSEF MODAL -->
+<div class="modal-overlay" id="modal-nosef">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="nosef-modal-title">הוספת נוסף</div>
+    <div class="form-group"><label>תיאור</label><input type="text" id="nosef-desc"></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="nosef-date"></div>
+      <div class="form-group"><label>סכום כולל (₪)</label><input type="number" id="nosef-amount" oninput="updateNosefSplit()"></div>
+    </div>
+    <div style="background:rgba(46,196,182,0.08);border:1px solid var(--teal);border-radius:10px;padding:12px;margin-bottom:4px">
+      <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">חלוקה ישירה</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div id="nosef-split-all" onclick="setNosefSplit('all')" style="flex:1;padding:7px;border-radius:8px;border:2px solid var(--teal);background:rgba(46,196,182,0.1);cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--teal)">לכולם</div>
+        <div id="nosef-split-custom" onclick="setNosefSplit('custom')" style="flex:1;padding:7px;border-radius:8px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--muted)">בחר אנשים</div>
+      </div>
+      <div id="nosef-split-preview" style="font-size:12px;color:var(--muted)"></div>
+      <div id="nosef-custom-fields" style="display:none"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-nosef')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveNosef()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGE CATEGORIES MODAL -->
+<div class="modal-overlay" id="modal-manage-categories">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ניהול קטגוריות שונות</div>
+    <div id="categories-list" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="new-category-input" placeholder="קטגוריה חדשה..." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:Heebo,sans-serif;font-size:15px;padding:10px 13px;outline:none">
+      <button class="btn btn-primary" onclick="addCategory()">הוסף</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" style="width:100%" onclick="closeModal('modal-manage-categories');renderShonot()">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- keep legacy modals for edit compatibility -->
+<div class="modal-overlay" id="modal-extra" style="display:none!important"></div>
+<div class="modal-overlay" id="modal-daniel" style="display:none!important"></div>
+<div class="modal-overlay" id="modal-misc-inc" style="display:none!important"></div>
+
+<div class="modal-overlay" id="modal-loan">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">הלוואה חדשה</div>
+    <div class="form-group"><label>שם</label><select id="loan-name"><option value="">-- בחר --</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="loan-date"></div>
+      <div class="form-group"><label>סכום (₪)</label><input type="number" id="loan-amount"></div>
+    </div>
+    <div class="form-group"><label>סיבה</label><input type="text" id="loan-reason"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-loan')">ביטול</button>
+      <button class="btn btn-primary" onclick="addLoan()">הוסף</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-repay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">החזר הלוואה</div>
+    <div class="form-group"><label>שם</label><select id="repay-name"><option value="">-- בחר --</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="repay-date"></div>
+      <div class="form-group"><label>סכום (₪)</label><input type="number" id="repay-amount"></div>
+    </div>
+    <div class="form-group"><label>סיבה</label><input type="text" id="repay-reason"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-repay')">ביטול</button>
+      <button class="btn btn-primary" onclick="addRepay()">הוסף</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-redeem">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">פדיון קופה</div>
+    <div class="form-group"><label>שם</label><select id="redeem-name"><option value="">-- בחר --</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="redeem-date"></div>
+      <div class="form-group"><label>סכום (₪)</label><input type="number" id="redeem-amount"></div>
+    </div>
+    <div class="form-group"><label>סיבה</label><input type="text" id="redeem-reason"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-redeem')">ביטול</button>
+      <button class="btn btn-primary" onclick="addRedeem()">הוסף</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-donation">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">תרומה / הנצחה</div>
+    <div class="form-group"><label>שם (מי ביקש)</label><select id="donation-name"><option value="">-- בחר --</option></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="donation-date"></div>
+      <div class="form-group"><label>סכום (₪)</label><input type="number" id="donation-amount"></div>
+    </div>
+    <div class="form-group"><label>סיבה</label><input type="text" id="donation-reason"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-donation')">ביטול</button>
+      <button class="btn btn-primary" onclick="addDonation()">הוסף</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-misc">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">סכום שונות (חלוקה ישירה)</div>
+    <div class="form-group"><label>תיאור</label><input type="text" id="misc-desc"></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="misc-date"></div>
+      <div class="form-group"><label>סכום כולל (₪)</label><input type="number" id="misc-amount"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-misc')">ביטול</button>
+      <button class="btn btn-primary" onclick="addMisc()">הוסף</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-person">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">הוספת אדם</div>
+    <div class="form-group"><label>שם</label><input type="text" id="person-name-input"></div>
+    <div class="form-group">
+      <label>תפקיד (לחץ לבחירה)</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div id="tog-tithe-member" onclick="togglePersonRole('tithe-member')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all 0.15s;user-select:none">
+          <span style="font-size:14px;font-weight:500">מקבל מעשרות</span>
+          <span id="togicon-tithe-member" style="font-size:20px;color:var(--muted)">○</span>
+        </div>
+        <div id="tog-can-loan" onclick="togglePersonRole('can-loan')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all 0.15s;user-select:none">
+          <span style="font-size:14px;font-weight:500">יכול ללוות</span>
+          <span id="togicon-can-loan" style="font-size:20px;color:var(--muted)">○</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-group"><label>צבע</label><input type="color" id="person-color" value="#c9a84c" style="height:40px;width:100%;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--surface2)"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-person')">ביטול</button>
+      <button class="btn btn-primary" onclick="addPerson()">הוסף</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-salary-edit">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="salary-edit-title">עריכת משכורת</div>
+    <div class="form-group"><label>סכום (₪)</label><input type="number" id="salary-edit-value"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-salary-edit')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveSalaryEdit()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- TITHE DISTRIBUTION EVENT -->
+<div class="modal-overlay" id="modal-tithe-dist">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">רישום חלוקת מעשרות</div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="tdist-date"></div>
+      <div class="form-group"><label>סכום כולל (₪)</label><input type="number" id="tdist-amount" oninput="updateTdistPreview()"></div>
+    </div>
+    <div class="form-group"><label>הערה</label><input type="text" id="tdist-note" placeholder="לדוגמה: מעשרות ינואר 2026"></div>
+    <div id="tdist-preview" style="background:var(--surface2);border-radius:10px;padding:12px;font-size:13px;color:var(--muted);margin-bottom:4px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-tithe-dist')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveTitheDist()">שמור חלוקה</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC EDIT MODAL -->
+<div class="modal-overlay" id="modal-edit-record">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="edit-record-title">עריכת רשומה</div>
+    <div id="edit-record-name-group" class="form-group"><label>שם</label><select id="edit-record-name"><option value="">-- בחר --</option></select></div>
+    <div id="edit-record-desc-group" class="form-group"><label>תיאור</label><input type="text" id="edit-record-desc"></div>
+    <div class="form-row">
+      <div class="form-group"><label>תאריך</label><input type="date" id="edit-record-date"></div>
+      <div class="form-group"><label>סכום (₪)</label><input type="number" id="edit-record-amount"></div>
+    </div>
+    <div id="edit-record-reason-group" class="form-group"><label>סיבה / הערה</label><input type="text" id="edit-record-reason"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-record')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveEditRecord()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PERSON MODAL -->
+<div class="modal-overlay" id="modal-edit-person">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">עריכת אדם</div>
+    <div class="form-group"><label>שם</label><input type="text" id="edit-person-name"></div>
+    <div class="form-group">
+      <label>תפקיד (לחץ לבחירה)</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div id="etog-tithe-member" onclick="toggleEditPersonRole('tithe-member')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all 0.15s;user-select:none">
+          <span style="font-size:14px;font-weight:500">מקבל מעשרות</span>
+          <span id="etogicon-tithe-member" style="font-size:20px;color:var(--muted)">○</span>
+        </div>
+        <div id="etog-can-loan" onclick="toggleEditPersonRole('can-loan')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all 0.15s;user-select:none">
+          <span style="font-size:14px;font-weight:500">יכול ללוות</span>
+          <span id="etogicon-can-loan" style="font-size:20px;color:var(--muted)">○</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-group"><label>צבע</label><input type="color" id="edit-person-color" style="height:40px;width:100%;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--surface2)"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-person')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveEditPerson()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALARY YEAR PICKER -->
+<div class="modal-overlay" id="modal-salary-year">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <button onclick="closeModal('modal-salary-year')" style="width:32px;height:32px;flex-shrink:0;border-radius:50%;border:none;background:var(--surface2);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:18px;line-height:1;flex-shrink:0" onclick="navSalaryYear(-1)">&#8250;</button>
+      <div class="modal-title" id="salary-year-title" style="margin-bottom:0;text-align:center;flex:1;font-size:18px">משכורות</div>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:18px;line-height:1;flex-shrink:0" onclick="navSalaryYear(1)">&#8249;</button>
+    </div>
+    <div id="salary-year-months"></div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const _initialData = {"titheRate":20,"donationRate":50,"donationPeriodRate":50,"persons":[],"salaries":{},"shonot":[],"nosef":[],"incomeCategories":[],"extras":[],"daniels":[],"miscInc":[],"loans":[],"repayments":[],"redemptions":[],"donations":[],"miscDist":[],"titheEvents":[],"_sv":6,"nextId":100};
+const _saved = (() => { try { return JSON.parse(localStorage.getItem('karenSiua')||'null'); } catch(e){return null;} })();
+let state;
+if (_saved && _saved._sv >= 6) {
+  state = _saved;
+} else {
+  state = JSON.parse(JSON.stringify(_initialData));
+  localStorage.setItem('karenSiua', JSON.stringify(state));
+}
+const defaultState = JSON.stringify(_initialData);
+if (_saved && _saved._sv >= 6) {
+  state = _saved;
+} else {
+  // Old or missing data – load fresh defaults
+  state = JSON.parse(defaultState);
+  localStorage.setItem('karenSiua', JSON.stringify(state));
+}
+
+// ===================== HELPERS =====================
+const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmtN = n => Math.round(n).toLocaleString('he-IL');
+const parseD = d => d ? new Date(d).toLocaleDateString('he-IL') : '';
+const save = () => localStorage.setItem('karenSiua', JSON.stringify(state));
+const nextId = () => ++state.nextId;
+
+function totalSalaries() {
+  let t = 0;
+  for (const yr in state.salaries) t += state.salaries[yr].reduce((a,b)=>a+(b||0),0);
+  return t;
+}
+function totalExtras() { return (state.nosef||[]).reduce((a,b)=>a+b.amount,0); }
+function totalDaniel() { return 0; } // legacy
+function totalMiscInc() { return (state.shonot||[]).reduce((a,b)=>a+b.amount,0); }
+function totalShonot() { return totalMiscInc(); }
+function totalNosef() { return totalExtras(); }
+function totalTithableIncome() { return totalSalaries() + totalShonot(); }
+function totalIncome() { return totalSalaries() + totalShonot() + totalNosef(); }
+// מעשרות = 20% ממשכורות+שונות בלבד
+function totalTithe() { return totalTithableIncome() * (state.titheRate/100); }
+// תוספות = 100% מנוסף, מתחלק ישירות
+function totalTosfot() { return totalNosef(); }
+function titheRecipients() { return state.persons.filter(p=>p.titheRecipient); }
+// perPersonTithe: sum of all titheEvents for each person
+function perPersonTithe() {
+  const r = {};
+  titheRecipients().forEach(p => r[p.name] = 0);
+  state.titheEvents.forEach(ev => {
+    (ev.shares||[]).forEach(s => {
+      if (r[s.name] !== undefined) r[s.name] = (r[s.name]||0) + s.amount;
+    });
+  });
+  return r;
+}
+// pending = total tithe - already distributed
+function pendingTithe() {
+  const distributed = state.titheEvents.reduce((a,e)=>a+e.amount,0);
+  return totalTithe() - distributed;
+}
+function redemptionByPerson(name) { return state.redemptions.filter(r=>r.name===name).reduce((a,b)=>a+b.amount,0); }
+function miscDistPerPerson() {
+  const recs = titheRecipients();
+  if (!recs.length) return 0;
+  return state.miscDist.reduce((a,b)=>a+b.amount,0) / recs.length;
+}
+function kupaForPerson(name) {
+  const share = perPersonTithe()[name] || 0;
+  const misc = miscDistPerPerson();
+  const redeemed = redemptionByPerson(name);
+  return share + misc - redeemed;
+}
+function totalLoans(name) { return state.loans.filter(l=>l.name===name).reduce((a,b)=>a+b.amount,0); }
+function totalRepay(name) { return state.repayments.filter(r=>r.name===name).reduce((a,b)=>a+b.amount,0); }
+function personColor(name) {
+  const p = state.persons.find(x=>x.name===name);
+  return p ? p.color : '#888';
+}
+
+// ===================== NAV =====================
+function showPage(id, tabEl) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.desktop-tab').forEach(t=>t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  setNav(id);
+  closeMainMenu();
+  closeSettings();
+  renderPage(id);
+  // scroll to top
+  window.scrollTo(0,0);
+  document.querySelector('main')?.scrollTo(0,0);
+}
+function setNav(id) {
+  // highlight active menu item
+  document.querySelectorAll('.main-menu-item').forEach(m=>m.classList.remove('active'));
+  const el = document.getElementById('menuitem-'+id);
+  if (el) el.classList.add('active');
+  // sync desktop tab
+  document.querySelectorAll('.desktop-tab').forEach(t=>{
+    const map={dashboard:'דשבורד',income:'הכנסות',tithe:'מעשרות',loans:'הלוואות',redemption:'פדיון',donations:'הנצחה',misc:'שונות',persons:'אנשים'};
+    if (t.textContent.includes(map[id]||'__')) t.classList.add('active');
+    else t.classList.remove('active');
+  });
+}
+function toggleMainMenu() {
+  const panel = document.getElementById('main-menu-panel');
+  const overlay = document.getElementById('menu-overlay');
+  const open = panel.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  document.getElementById('nav-menu').classList.toggle('active', open);
+  if (open) closeSettings();
+}
+function closeMainMenu() {
+  document.getElementById('main-menu-panel').classList.remove('open');
+  document.getElementById('menu-overlay').classList.remove('open');
+  document.getElementById('nav-menu').classList.remove('active');
+}
+function closeSettings() {
+  const d=document.getElementById('settings-drawer');
+  const ov=document.getElementById('settings-overlay');
+  if(d) d.classList.remove('open');
+  if(ov) ov.classList.remove('open');
+  const nb=document.getElementById('nav-settings-btn');
+  if(nb) nb.classList.remove('active');
+}
+// legacy stubs
+function toggleMore() { toggleMainMenu(); }
+function closeMore() { closeMainMenu(); }
+function toggleSettings() {
+  const d = document.getElementById('settings-drawer');
+  const ov = document.getElementById('settings-overlay');
+  const open = d.classList.toggle('open');
+  if (ov) ov.classList.toggle('open', open);
+  const btn = document.getElementById('settings-btn-toggle');
+  if (btn) btn.classList.toggle('open', open);
+  const navBtn = document.getElementById('nav-settings-btn');
+  if (navBtn) navBtn.classList.toggle('active', open);
+  closeMainMenu();
+}
+function hardReset() {
+  const doReset = () => { localStorage.removeItem('karenSiua'); location.reload(); };
+  if (confirm('לפני המחיקה – האם לייצא גיבוי?')) {
+    exportData();
+    setTimeout(() => {
+      if (confirm('הגיבוי הורד. למחוק את כל הנתונים?')) doReset();
+    }, 800);
+  } else {
+    if (confirm('למחוק את כל הנתונים? לא ניתן לשחזר!')) doReset();
+  }
+}
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'קרן_סיוע_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.salaries) { alert('קובץ לא תקין'); return; }
+      if (!confirm('לייבא נתונים? זה יחליף את כל הנתונים הנוכחיים.')) return;
+      localStorage.setItem('karenSiua', JSON.stringify(imported));
+      location.reload();
+    } catch(err) { alert('שגיאה בקריאת הקובץ'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function setTheme(mode) {
+  const on='padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--gold);color:#111';
+  const off='padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--muted)';
+  const dk=document.getElementById('theme-dark'), lt=document.getElementById('theme-light');
+  if (!dk||!lt) return;
+  if (mode==='light') {
+    document.body.classList.add('light-mode');
+    lt.style.cssText=on; dk.style.cssText=off;
+  } else {
+    document.body.classList.remove('light-mode');
+    dk.style.cssText=on; lt.style.cssText=off;
+  }
+  state.theme=mode; save();
+  const _ap=document.querySelector('.page.active');
+  if(_ap) renderPage(_ap.id.replace('page-',''));
+}
+function syncSettings(fromId) {
+  const map = {
+    titheRate:'titheRateD', titheRateD:'titheRate',
+    donationRate:'donationRateD', donationRateD:'donationRate',
+    donationPeriodRate:'donationPeriodRateD', donationPeriodRateD:'donationPeriodRate'
+  };
+  const val = document.getElementById(fromId).value;
+  const peer = map[fromId];
+  if (peer && document.getElementById(peer)) document.getElementById(peer).value = val;
+  renderAll();
+}
+
+function showSubTab(page, sub, callerEl) {
+  const tabs = document.querySelectorAll(`#page-${page} .sub-tab`);
+  tabs.forEach(t=>t.classList.remove('active'));
+  const activeTab = callerEl || (typeof event !== 'undefined' && event && event.currentTarget);
+  if (activeTab) activeTab.classList.add('active');
+  else tabs.forEach(t=>{ if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes(`'${sub}'`)) t.classList.add('active'); });
+  ['salary','extra','daniel','misc-inc','shonot'].forEach(s=>{ const el=document.getElementById('income-'+s); if(el) el.style.display='none'; });
+  ['all-loans','repayments','balance'].forEach(s=>{ const el=document.getElementById(s); if(el) el.style.display='none'; });
+  ['tithe-summary','tithe-history'].forEach(s=>{ const el=document.getElementById(s); if(el) el.style.display='none'; });
+  const el = document.getElementById(sub) || document.getElementById('income-'+sub);
+  if (el) el.style.display='';
+  renderSubPage(page, sub);
+}
+
+function renderPage(id) {
+  if (id==='dashboard') renderDashboard();
+  if (id==='income') {
+    // find currently active sub-tab, default to salary
+    const activeSubEl = document.querySelector('#page-income .sub-tab.active');
+    const activeSub = activeSubEl ? (activeSubEl.getAttribute('onclick').includes('shonot') ? 'shonot' : 'salary') : 'salary';
+    ['extra','daniel','misc-inc','shonot'].forEach(s=>{ const el=document.getElementById('income-'+s); if(el) el.style.display='none'; });
+    const sal=document.getElementById('income-salary');
+    if (activeSub==='shonot') {
+      if(sal) sal.style.display='none';
+      const sh=document.getElementById('income-shonot'); if(sh) sh.style.display='';
+      renderShonot();
+    } else {
+      if(sal) sal.style.display='';
+      renderSalaryGrid();
+    }
+  }
+  if (id==='tithe') {
+    // ensure tithe-summary is visible
+    document.getElementById('tithe-summary').style.display='';
+    document.getElementById('tithe-history').style.display='none';
+    const stabs = document.querySelectorAll('#page-tithe .sub-tab');
+    stabs.forEach((t,i)=>t.classList.toggle('active',i===0));
+    renderTithe();
+  }
+  if (id==='loans') {
+    ['all-loans','repayments','balance'].forEach(s=>{ const el=document.getElementById(s); if(el) el.style.display='none'; });
+    const al=document.getElementById('all-loans'); if(al) al.style.display='';
+    document.querySelectorAll('#page-loans .sub-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+    renderLoans(); renderRepayments(); renderBalance();
+  }
+  if (id==='redemption') renderRedemptions();
+  if (id==='donations') renderDonations();
+  if (id==='misc') { renderTosfot(); }
+  if (id==='persons') renderPersonsList();
+}
+
+function renderSubPage(page, sub) {
+  if (page==='income') {
+    if (sub==='salary') renderSalaryGrid();
+    if (sub==='extra') renderExtras();
+    if (sub==='daniel') renderDaniel();
+    if (sub==='misc-inc') renderMiscInc();
+    if (sub==='shonot') renderShonot();
+  }
+  if (page==='loans') {
+    if (sub==='all-loans') renderLoans();
+    if (sub==='repayments') renderRepayments();
+    if (sub==='balance') renderBalance();
+  }
+  if (page==='tithe') {
+    if (sub==='tithe-summary') renderTithe();
+    if (sub==='tithe-history') renderTithe();
+  }
+}
+
+// ===================== DASHBOARD =====================
+let charts = {};
+function renderDashboard() {
+  const ti = totalIncome(), tt = totalTithe(), tl = state.loans.reduce((a,b)=>a+b.amount,0);
+  const tr = state.repayments.reduce((a,b)=>a+b.amount,0);
+  const tred = state.redemptions.reduce((a,b)=>a+b.amount,0);
+  const tdon = state.donations.reduce((a,b)=>a+b.amount,0);
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi gold"><div class="kpi-label">סה"כ הכנסות</div><div class="kpi-value">${fmt(ti)}</div><div class="kpi-sub">עבודה + נוסף + הובלות + שונות</div></div>
+    <div class="kpi teal"><div class="kpi-label">מעשרות (${state.titheRate}%)</div><div class="kpi-value">${fmt(tt)}</div><div class="kpi-sub">ממשכורות+שונות · ${fmt(tt/Math.max(1,titheRecipients().length))} לאדם</div></div>
+    <div class="kpi red"><div class="kpi-label">הלוואות</div><div class="kpi-value">${fmt(tl)}</div><div class="kpi-sub">החזרים: ${fmt(tr)}</div></div>
+    <div class="kpi green"><div class="kpi-label">פדיון</div><div class="kpi-value">${fmt(tred)}</div><div class="kpi-sub">מהקופה האישית</div></div>
+    <div class="kpi blue"><div class="kpi-label">הנצחה / תרומות</div><div class="kpi-value">${fmt(tdon)}</div></div>
+    <div class="kpi teal"><div class="kpi-label">תוספות (100%)</div><div class="kpi-value">${fmt(totalTosfot())}</div><div class="kpi-sub">${fmt(totalTosfot()/Math.max(1,titheRecipients().length))} לאדם</div></div>
+    <div class="kpi gold" style="grid-column:1/-1;border:2px solid var(--gold)"><div class="kpi-label">⏳ מעשרות ממתין לחלוקה</div><div class="kpi-value">${fmt(pendingTithe())}</div><div class="kpi-sub">מתוך ${fmt(tt)} סה"כ מעשרות · חולק: ${fmt(tt-pendingTithe())}</div></div>
+  `;
+  // Charts
+  const years = Object.keys(state.salaries).sort();
+  const yearTotals = years.map(y=>state.salaries[y].reduce((a,b)=>a+(b||0),0));
+  if (charts.income) charts.income.destroy();
+  charts.income = new Chart(document.getElementById('chartIncome'), {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [{
+        label: 'משכורות',
+        data: yearTotals,
+        backgroundColor: 'rgba(201,168,76,0.7)',
+        borderColor: '#c9a84c',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#7a7f9a'}},y:{ticks:{color:'#7a7f9a',callback:v=>'₪'+v.toLocaleString()}}}}
+  });
+  if (charts.sources) charts.sources.destroy();
+  charts.sources = new Chart(document.getElementById('chartSources'), {
+    type: 'doughnut',
+    data: {
+      labels: ['משכורות','נוסף','הובלות דניאל','שונות'],
+      datasets: [{
+        data: [totalSalaries(), totalExtras(), totalDaniel(), totalMiscInc()],
+        backgroundColor: ['#c9a84c','#2ec4b6','#7c5cbf','#4a90d9'],
+        borderColor: '#1f2334',
+        borderWidth: 2,
+      }]
+    },
+    options: { responsive:true, plugins:{legend:{position:'bottom',labels:{color:'#7a7f9a',boxWidth:12,padding:8}}}}
+  });
+  const recs = titheRecipients();
+  if (charts.kupa) charts.kupa.destroy();
+  charts.kupa = new Chart(document.getElementById('chartKupa'), {
+    type: 'bar',
+    data: {
+      labels: recs.map(p=>p.name),
+      datasets: [
+        { label:'קופה נצברת', data: recs.map(p=>(perPersonTithe()[p.name]||0)+miscDistPerPerson()), backgroundColor:'rgba(46,196,182,0.5)', borderColor:'#2ec4b6', borderWidth:1, borderRadius:4 },
+        { label:'נפדה', data: recs.map(p=>redemptionByPerson(p.name)), backgroundColor:'rgba(224,82,96,0.5)', borderColor:'#e05260', borderWidth:1, borderRadius:4 },
+      ]
+    },
+    options: { responsive:true, plugins:{legend:{labels:{color:'#7a7f9a'}}}, scales:{x:{ticks:{color:'#7a7f9a'}},y:{ticks:{color:'#7a7f9a',callback:v=>'₪'+v.toLocaleString()}}}}
+  });
+  const allNames = [...new Set([...state.loans.map(l=>l.name),...state.repayments.map(r=>r.name)])];
+  if (charts.loans) charts.loans.destroy();
+  charts.loans = new Chart(document.getElementById('chartLoans'), {
+    type: 'bar',
+    data: {
+      labels: allNames,
+      datasets: [
+        { label:'הלוואות', data: allNames.map(n=>totalLoans(n)), backgroundColor:'rgba(224,82,96,0.6)', borderColor:'#e05260', borderWidth:1, borderRadius:4 },
+        { label:'החזרים', data: allNames.map(n=>totalRepay(n)), backgroundColor:'rgba(60,179,113,0.6)', borderColor:'#3cb371', borderWidth:1, borderRadius:4 },
+      ]
+    },
+    options: { responsive:true, plugins:{legend:{labels:{color:'#7a7f9a'}}}, scales:{x:{ticks:{color:'#7a7f9a'}},y:{ticks:{color:'#7a7f9a',callback:v=>'₪'+v.toLocaleString()}}}}
+  });
+  // Person cards
+  document.getElementById('persons-summary').innerHTML = recs.map(p=>{
+    const kupa = kupaForPerson(p.name);
+    const loans = totalLoans(p.name);
+    const repaid = totalRepay(p.name);
+    const debt = loans - repaid;
+    const titheShare = perPersonTithe()[p.name]||0;
+    const misc = miscDistPerPerson();
+    const redeemed = redemptionByPerson(p.name);
+    return `<div class="person-card">
+      <div class="person-name"><span class="dot" style="background:${p.color}"></span>${p.name}</div>
+      <div class="person-rows">
+        <div class="person-row"><span class="label">חלק ממעשרות</span><span class="val gold">${fmt(titheShare)}</span></div>
+        <div class="person-row"><span class="label">שונות שחולק</span><span class="val gold">${fmt(misc)}</span></div>
+        <div class="person-row"><span class="label">נפדה</span><span class="val neg">${fmt(redeemed)}</span></div>
+        <div class="person-row"><span class="label">יתרה בקופה</span><span class="val ${kupa>=0?'pos':'neg'}">${fmt(kupa)}</span></div>
+        <div class="person-row"><span class="label">הלוואות</span><span class="val neg">${fmt(loans)}</span></div>
+        <div class="person-row"><span class="label">החזרים</span><span class="val pos">${fmt(repaid)}</span></div>
+        <div class="person-row"><span class="label">חוב נותר</span><span class="val ${debt>0?'neg':'pos'}">${fmt(debt)}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===================== SALARY GRID =====================
+let salaryEditKey = null;
+let currentSalaryYear = null;
+const MONTHS_SHORT = ['ינואר','פברואר','מרס','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+function renderSalaryGrid() {
+  const years = Object.keys(state.salaries).sort().reverse();
+  const wrap = document.getElementById('salary-years-grid');
+  if (!wrap) return;
+  let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+  years.forEach(yr => {
+    const total = state.salaries[yr].reduce((a,b)=>a+(b||0),0);
+    html += `<div class="person-item" style="cursor:pointer;flex-direction:column;align-items:stretch;gap:0" onclick="openSalaryYear('${yr}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:700;font-size:16px">${yr}</span>
+        <span style="color:var(--gold2);font-weight:700">${fmt(total)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:10px">
+        ${state.salaries[yr].map((v,m)=>`<div style="font-size:10px;text-align:center;padding:4px 2px;background:${v?'rgba(201,168,76,0.12)':'var(--surface2)'};border-radius:6px;border:1px solid var(--border)">
+          <div style="color:var(--muted)">${MONTHS_SHORT[m].slice(0,3)}</div>
+          <div style="color:${v?'var(--gold2)':'var(--border)'};font-weight:600;font-size:11px">${v?'₪'+Math.round(v/1000*10)/10+'K':'-'}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function navSalaryYear(dir) {
+  const years = Object.keys(state.salaries).sort();
+  const idx = years.indexOf(String(currentSalaryYear));
+  const newIdx = idx + dir;
+  if (newIdx >= 0 && newIdx < years.length) openSalaryYear(years[newIdx]);
+}
+window.openSalaryYear = function(yr) {
+  currentSalaryYear = yr;
+  document.getElementById('salary-year-title').textContent = `משכורות ${yr}`;
+  const total = (state.salaries[yr]||[]).reduce((a,b)=>a+(b||0),0);
+  let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+  MONTHS_SHORT.forEach((mon,m) => {
+    const v = state.salaries[yr]?.[m]||0;
+    html += `<div style="display:flex;flex-direction:column;gap:3px;padding:8px 10px;background:var(--surface2);border-radius:10px;border:1px solid ${v?'var(--gold)':'var(--border)'};cursor:pointer" onclick="openSalaryEdit('${yr}',${m})">
+      <span style="font-size:11px;color:var(--muted);font-weight:600">${mon}</span>
+      <span style="font-size:15px;font-weight:800;color:${v?'var(--gold2)':'var(--muted)'}">${v?fmt(v):'-'}</span>
+    </div>`;
+  });
+  html += `<div style="grid-column:1/-1;display:flex;justify-content:space-between;padding:10px 14px;background:rgba(201,168,76,0.1);border-radius:10px;border:1px solid var(--gold);margin-top:2px"><span style="font-weight:700;color:var(--gold2)">סה"כ</span><span style="font-weight:800;color:var(--gold2)">${fmt(total)}</span></div>`;
+  html += '</div>';
+  document.getElementById('salary-year-months').innerHTML = html;
+  openModal('modal-salary-year');
+}
+
+window.openSalaryEdit = function(yr, m) {
+  salaryEditKey = {yr, m};
+  document.getElementById('salary-edit-title').textContent = `עריכת משכורת – ${MONTHS_SHORT[m]} ${yr}`;
+  document.getElementById('salary-edit-value').value = state.salaries[yr]?.[m]||'';
+  closeModal('modal-salary-year');
+  openModal('modal-salary-edit');
+};
+function saveSalaryEdit() {
+  const {yr, m} = salaryEditKey;
+  state.salaries[yr][m] = parseFloat(document.getElementById('salary-edit-value').value)||0;
+  save(); closeModal('modal-salary-edit');
+  openModal('modal-salary-year');
+  openSalaryYear(yr);
+  renderSalaryGrid();
+}
+function addSalaryRow() {
+  const yr = prompt('הכנס שנה חדשה:');
+  if (!yr || isNaN(yr)) return;
+  if (!state.salaries[yr]) state.salaries[yr] = new Array(12).fill(0);
+  save(); renderSalaryGrid();
+}
+
+// ===================== EXTRAS / DANIEL / MISC-INC =====================
+function renderTableInto(tbodyId, data, stateKey, hasName) {
+  const tbody = document.getElementById(tbodyId);
+  if (!data.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty">אין נתונים</td></tr>`; return; }
+  if (!tableGroupState[stateKey]) tableGroupState[stateKey] = new Set(['all']);
+  const sorted = getSorted(data, stateKey);
+  const byYear = {};
+  sorted.forEach(r => { const yr=r.date?r.date.substring(0,4):'?'; if(!byYear[yr])byYear[yr]=[]; byYear[yr].push(r); });
+  const years = Object.keys(byYear).sort().reverse();
+  const openSet = tableGroupState[stateKey];
+  let html = '';
+  years.forEach(yr => {
+    const rows = byYear[yr];
+    const total = rows.reduce((a,r)=>a+r.amount,0);
+    const isOpen = openSet.has(yr) || openSet.has('all');
+    html += `<tr style="background:var(--surface2);cursor:pointer" onclick="toggleGroupYear('${stateKey}','${yr}')">
+      <td colspan="3" style="font-weight:700;font-size:13px;padding:10px 12px">
+        <span style="color:var(--gold2)">${yr}</span>
+        <span style="color:var(--muted);font-size:11px;margin-right:8px">${rows.length} רשומות</span>
+        <span style="float:left;color:var(--muted);font-size:16px">${isOpen?'▲':'▼'}</span>
+      </td>
+      <td colspan="3" style="text-align:left;font-weight:700;color:var(--gold2);padding:10px 12px">${fmt(total)}</td>
+    </tr>`;
+    if (isOpen) rows.forEach(r => {
+      html += `<tr>
+        ${hasName?`<td><span style="display:inline-flex;align-items:center;gap:5px"><span style="background:${personColor(r.name)};width:7px;height:7px;border-radius:50%;display:inline-block"></span>${r.name}</span></td>`:''}
+        <td style="font-size:13px">${r.desc||r.reason||''}</td>
+        <td style="color:var(--muted);font-size:12px">${parseD(r.date)}</td>
+        <td style="font-weight:700;color:var(--gold2)">${fmt(r.amount)}</td>
+        <td colspan="2" style="white-space:nowrap">
+          <button style="padding:3px 8px;font-size:11px;background:transparent;color:var(--teal);border:1px solid var(--teal);border-radius:5px;cursor:pointer;margin-left:4px" onclick="openEditRecord('${stateKey}',${r.id})">ערוך</button>
+          <button style="padding:3px 8px;font-size:11px;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:5px;cursor:pointer" onclick="deleteRow('${stateKey}',${r.id})">מחק</button>
+        </td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML = html;
+}
+function renderExtras() { renderTableInto('extra-tbody', state.extras, 'extras', false); }
+function renderDaniel() { renderTableInto('daniel-tbody', state.daniels, 'daniels', false); }
+function renderMiscInc() { renderTableInto('misc-inc-tbody', state.miscInc, 'miscInc', false); }
+function addExtra() {
+  state.extras.push({id:nextId(),desc:document.getElementById('extra-desc').value,date:document.getElementById('extra-date').value,amount:parseFloat(document.getElementById('extra-amount').value)||0});
+  save(); closeModal('modal-extra'); renderExtras();
+}
+function addDaniel() {
+  state.daniels.push({id:nextId(),desc:document.getElementById('daniel-desc').value,date:document.getElementById('daniel-date').value,amount:parseFloat(document.getElementById('daniel-amount').value)||0});
+  save(); closeModal('modal-daniel'); renderDaniel();
+}
+function addMiscInc() {
+  state.miscInc.push({id:nextId(),desc:document.getElementById('miscinc-desc').value,date:document.getElementById('miscinc-date').value,amount:parseFloat(document.getElementById('miscinc-amount').value)||0});
+  save(); closeModal('modal-misc-inc'); renderMiscInc();
+}
+window.deleteRow = function(key, id) {
+  id = Number(id);
+  if (!confirm('למחוק?')) return;
+  state[key] = state[key].filter(r => r.id !== id);
+  save(); renderAll();
+};
+
+let editCtx = null;
+const sortState = {}; // key -> {col, dir}
+function getSorted(arr, key) {
+  const s = sortState[key];
+  if (!s) return arr;
+  return [...arr].sort((a,b) => {
+    let va = a[s.col], vb = b[s.col];
+    if (s.col === 'amount') { va = +va; vb = +vb; }
+    if (s.col === 'date') { va = va||''; vb = vb||''; }
+    if (va < vb) return s.dir === 'asc' ? -1 : 1;
+    if (va > vb) return s.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+function toggleSort(key, col) {
+  const cur = sortState[key];
+  if (cur && cur.col === col) sortState[key].dir = cur.dir === 'asc' ? 'desc' : 'asc';
+  else sortState[key] = {col, dir: 'asc'};
+  reRenderKey(key);
+}
+function resetSort(key) {
+  delete sortState[key];
+  reRenderKey(key);
+}
+function sortIcon(key, col) {
+  const s = sortState[key];
+  if (!s || s.col !== col) return '<span style="opacity:0.3">⇅</span>';
+  return s.dir === 'asc' ? '↑' : '↓';
+}
+window.openEditRecord = function(key, id) {
+  id = Number(id);
+  const nameKeys = ['loans','repayments','redemptions','donations'];
+  const arr = state[key];
+  if (!arr) return;
+  const rec = arr.find(r => r.id === id);
+  if (!rec) return;
+  editCtx = {key, id};
+  document.getElementById('edit-record-title').textContent = 'עריכת רשומה';
+  document.getElementById('edit-record-date').value = rec.date || '';
+  document.getElementById('edit-record-amount').value = rec.amount || '';
+  const nameGrp = document.getElementById('edit-record-name-group');
+  const descGrp = document.getElementById('edit-record-desc-group');
+  const reasonGrp = document.getElementById('edit-record-reason-group');
+  if (nameKeys.includes(key)) {
+    nameGrp.style.display = '';
+    const sel = document.getElementById('edit-record-name');
+    sel.innerHTML = state.persons.map(p => '<option value="' + p.name + '"' + (p.name === rec.name ? ' selected' : '') + '>' + p.name + '</option>').join('');
+    descGrp.style.display = 'none';
+  } else {
+    nameGrp.style.display = 'none';
+    descGrp.style.display = '';
+    document.getElementById('edit-record-desc').value = rec.desc || '';
+  }
+  if (rec.reason !== undefined) {
+    reasonGrp.style.display = '';
+    document.getElementById('edit-record-reason').value = rec.reason;
+  } else {
+    reasonGrp.style.display = 'none';
+  }
+  openModal('modal-edit-record');
+};
+function saveEditRecord() {
+  if (!editCtx) return;
+  const {key, id} = editCtx;
+  const nameKeys = ['loans','repayments','redemptions','donations'];
+  const rec = state[key].find(r => r.id === id);
+  if (!rec) return;
+  rec.date = document.getElementById('edit-record-date').value;
+  rec.amount = parseFloat(document.getElementById('edit-record-amount').value) || 0;
+  if (nameKeys.includes(key)) rec.name = document.getElementById('edit-record-name').value;
+  else rec.desc = document.getElementById('edit-record-desc').value;
+  if (rec.reason !== undefined) rec.reason = document.getElementById('edit-record-reason').value;
+  save(); closeModal('modal-edit-record'); renderAll();
+}
+
+// ===================== SHONOT =====================
+let shonotEditId = null;
+const activeCats = { shonot: null, nosef: null }; // null = all
+
+function toggleCatPanel(key) {
+  const realKey = key === 'nosef2' ? 'nosef' : key;
+  const panel = document.getElementById(key + '-cat-panel');
+  const btn = document.getElementById(key + '-cat-toggle-btn');
+  if (!panel) return;
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? '' : 'none';
+  if (btn) { btn.style.borderColor = open ? 'var(--gold)' : 'var(--border)'; btn.style.color = open ? 'var(--gold2)' : 'var(--muted)'; }
+  if (open) renderCatButtons(key);
+}
+
+function renderCatButtons(key) {
+  const el = document.getElementById(key + '-cat-buttons');
+  if (!el) return;
+  const arr = key === 'shonot' ? (state.shonot||[]) : (state.nosef||[]);
+  const cats = ['הכל', ...new Set(arr.map(r => r.category||'').filter(Boolean))];
+  const active = activeCats[key];
+  el.innerHTML = cats.map(cat => {
+    const isActive = cat === 'הכל' ? !active : active === cat;
+    const color = key === 'shonot' ? 'var(--gold2)' : 'var(--teal)';
+    const bg = key === 'shonot' ? 'rgba(201,168,76,0.15)' : 'rgba(46,196,182,0.15)';
+    return `<button onclick="filterByCat('${key}','${cat}')" style="padding:5px 12px;border-radius:20px;border:1px solid ${isActive?color:'var(--border)'};background:${isActive?bg:'transparent'};color:${isActive?color:'var(--muted)'};font-family:Heebo,sans-serif;font-size:12px;font-weight:${isActive?'700':'400'};cursor:pointer">${cat}</button>`;
+  }).join('');
+}
+
+function filterByCat(key, cat) {
+  activeCats[key] = cat === 'הכל' ? null : cat;
+  renderCatButtons(key);
+  if (key === 'shonot') renderShonot();
+  else if (key === 'nosef2') renderTosfot();
+  else renderNosef();
+}
+let nosefSplitMode = 'all';
+let nosefEditId = null;
+
+function renderShonot() {
+  // update sort headers
+  const sh = document.getElementById('shonot-thead');
+  if (sh) sh.innerHTML = '<tr>'+thSort('קטגוריה','shonot','category')+thSort('תיאור','shonot','desc')+thSort('תאריך','shonot','date')+thSort('סכום','shonot','amount')+'<th>מעשרות</th>'+resetSortBtn('shonot')+'</tr>';
+  const filterCat = activeCats['shonot'] || '';
+  const allRows = (state.shonot||[]).filter(r=>!filterCat||r.category===filterCat);
+  // flat sorted view
+  if (sortState['shonot']) {
+    const flat = getSorted(allRows,'shonot');
+    const tbody = document.getElementById('shonot-tbody');
+    if (tbody) tbody.innerHTML = flat.map(r=>`<tr>
+      <td><span style="background:rgba(201,168,76,0.15);color:var(--gold2);padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600">${r.category||''}</span></td>
+      <td style="font-size:11px">${r.desc||''}</td>
+      <td style="color:var(--muted);font-size:11px">${parseD(r.date)}</td>
+      <td style="font-weight:700;color:var(--gold2)">${fmt(r.amount)}</td>
+      <td style="font-size:11px;color:var(--teal)">${fmt(r.amount*(state.titheRate/100))}</td>
+      <td><button class="act-btn act-edit" onclick="openEditShonot(${r.id})">✏️</button><button class="act-btn act-del" onclick="deleteShonot(${r.id})">🗑️</button></td>
+    </tr>`).join('');
+    const bar = document.getElementById('shonot-summary-bar');
+    if (bar) bar.innerHTML = '<div class="summary-item"><span class="s-label">סה"כ:</span><span class="s-val gold">'+fmt(allRows.reduce((a,r)=>a+r.amount,0))+'</span></div>';
+    return;
+  }
+  const rows = allRows;
+  const total = rows.reduce((a,r)=>a+r.amount,0);
+  const titheTotal = total*(state.titheRate/100);
+  const bar = document.getElementById('shonot-summary-bar');
+  if (bar) bar.innerHTML = `<div class="summary-item"><span class="s-label">סה"כ:</span><span class="s-val gold">${fmt(total)}</span></div>
+    <div class="summary-item"><span class="s-label">מעשרות (${state.titheRate}%):</span><span class="s-val gold">${fmt(titheTotal)}</span></div>`;
+  const tbody = document.getElementById('shonot-tbody');
+  if (!tbody) return;
+  if (!rows.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">אין רשומות</td></tr>'; return; }
+  // group by year
+  if (!tableGroupState['shonot']) tableGroupState['shonot'] = new Set(['all']);
+  const sorted = getSorted(rows,'shonot');
+  const byYear = {};
+  sorted.forEach(r=>{ const yr=r.date?r.date.substring(0,4):'?'; if(!byYear[yr])byYear[yr]=[]; byYear[yr].push(r); });
+  const years = Object.keys(byYear).sort().reverse();
+  const openSet = tableGroupState['shonot'];
+  let html = '';
+  years.forEach(yr=>{
+    const yrows = byYear[yr];
+    const ytotal = yrows.reduce((a,r)=>a+r.amount,0);
+    const isOpen = !openSet.has(yr);
+    html += `<tr style="background:var(--surface2);cursor:pointer" onclick="toggleGroupYear('shonot','${yr}')">
+      <td colspan="4" style="font-weight:700;font-size:12px;padding:6px 7px"><span style="color:var(--gold2)">${yr}</span> <span style="color:var(--muted);font-size:11px">${yrows.length} רשומות</span><span style="float:left">${isOpen?'▲':'▼'}</span></td>
+      <td colspan="2" style="text-align:left;font-weight:700;color:var(--gold2);padding:6px 7px">${fmt(ytotal)}</td>
+    </tr>`;
+    if (isOpen) yrows.forEach(r=>{
+      html += `<tr>
+        <td><span style="background:rgba(201,168,76,0.15);color:var(--gold2);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${r.category||''}</span></td>
+        <td style="color:var(--muted);font-size:11px">${r.desc||''}</td>
+        <td style="color:var(--muted);font-size:11px">${parseD(r.date)}</td>
+        <td style="font-weight:700;color:var(--gold2)">${fmt(r.amount)}</td>
+        <td style="font-size:11px;color:var(--teal)">${fmt(r.amount*(state.titheRate/100))}</td>
+        <td style="white-space:nowrap">
+          <button class="act-btn act-edit" onclick="openEditShonot(${r.id})" title="ערוך">✏️</button>
+          <button class="act-btn act-del" onclick="deleteShonot(${r.id})" title="מחק">🗑️</button>
+        </td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+function updateShonotPreview() {
+  const amt = parseFloat(document.getElementById('shonot-amount')?.value)||0;
+  const p = document.getElementById('shonot-tithe-preview');
+  const a = document.getElementById('shonot-tithe-amt');
+  if (p && a) { p.style.display = amt?'':'none'; a.textContent = fmt(amt*(state.titheRate/100)); }
+}
+
+function openAddShonotModal() {
+  shonotEditId = null;
+  document.getElementById('shonot-modal-title').textContent = 'הוספת שונות';
+  document.getElementById('shonot-desc').value = '';
+  document.getElementById('shonot-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('shonot-amount').value = '';
+  document.getElementById('shonot-tithe-preview').style.display = 'none';
+  const sel = document.getElementById('shonot-cat-select');
+  sel.innerHTML = (state.incomeCategories||[]).map(c=>`<option value="${c}">${c}</option>`).join('');
+  openModal('modal-shonot');
+}
+window.openEditShonot = function(id) {
+  id = Number(id);
+  const r = (state.shonot||[]).find(x=>x.id===id);
+  if (!r) return;
+  shonotEditId = id;
+  document.getElementById('shonot-modal-title').textContent = 'עריכת שונות';
+  const sel = document.getElementById('shonot-cat-select');
+  sel.innerHTML = (state.incomeCategories||[]).map(c=>`<option value="${c}" ${c===r.category?'selected':''}>${c}</option>`).join('');
+  document.getElementById('shonot-desc').value = r.desc||'';
+  document.getElementById('shonot-date').value = r.date||'';
+  document.getElementById('shonot-amount').value = r.amount||'';
+  updateShonotPreview();
+  openModal('modal-shonot');
+};
+function saveShonot() {
+  const cat = document.getElementById('shonot-cat-select').value;
+  const desc = document.getElementById('shonot-desc').value;
+  const date = document.getElementById('shonot-date').value;
+  const amount = parseFloat(document.getElementById('shonot-amount').value)||0;
+  if (!date||!amount) return;
+  if (shonotEditId) {
+    const r = state.shonot.find(x=>x.id===shonotEditId);
+    if (r) { r.category=cat; r.desc=desc; r.date=date; r.amount=amount; }
+  } else {
+    state.shonot.push({id:nextId(), category:cat, desc, date, amount});
+  }
+  save(); closeModal('modal-shonot'); renderShonot();
+}
+window.deleteShonot = function(id) {
+  if (!confirm('למחוק?')) return;
+  state.shonot = state.shonot.filter(r=>r.id!==Number(id));
+  save(); renderShonot();
+};
+
+// ===================== NOSEF =====================
+function renderNosef() {
+  const tbody = document.getElementById('nosef-tbody');
+  if (!tbody) return;
+  const _allNosef = state.nosef||[];
+  const _nfCat = activeCats['nosef'];
+  const rows = _nfCat ? _allNosef.filter(r=>r.category===_nfCat) : _allNosef;
+  if (!rows.length) { tbody.innerHTML='<tr><td colspan="5" class="empty">אין רשומות</td></tr>'; return; }
+  if (!tableGroupState['nosef']) tableGroupState['nosef'] = new Set(['all']);
+  const openSet = tableGroupState['nosef'];
+  // group by category
+  const byYear = {};
+  rows.forEach(r=>{ const yr=r.date?r.date.substring(0,4):'?'; if(!byYear[yr])byYear[yr]=[]; byYear[yr].push(r); });
+  const years = Object.keys(byYear).sort().reverse();
+  let html = '';
+  years.forEach(yr=>{
+    const yrows = byYear[yr];
+    const ytotal = yrows.reduce((a,r)=>a+r.amount,0);
+    const isOpen = !openSet.has(yr);
+    html += `<tr style="background:var(--surface2);cursor:pointer" onclick="toggleGroupYear('nosef','${yr}')">
+      <td colspan="3" style="font-weight:700;font-size:12px;padding:6px 7px"><span style="color:var(--teal)">${yr}</span> <span style="color:var(--muted);font-size:11px">${yrows.length} רשומות</span><span style="float:left">${isOpen?'▲':'▼'}</span></td>
+      <td colspan="2" style="text-align:left;font-weight:700;color:var(--teal);padding:6px 7px">${fmt(ytotal)}</td>
+    </tr>`;
+    if (isOpen) yrows.forEach(r=>{
+      const cat = r.category||r.desc||'';
+      const persons = r.persons&&r.persons.length ? r.persons.map(p=>p.name+':'+fmt(p.amount)).join(', ') : 'כולם';
+      html += `<tr>
+        <td><span style="background:rgba(46,196,182,0.12);color:var(--teal);padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600">${cat}</span></td>
+        <td style="color:var(--muted);font-size:11px">${parseD(r.date)}</td>
+        <td style="font-weight:700;color:var(--teal)">${fmt(r.amount)}</td>
+        <td style="font-size:11px;color:var(--muted)">${persons}</td>
+        <td style="white-space:nowrap">
+          <button class="act-btn act-edit" onclick="openEditNosef(${r.id})" title="ערוך">✏️</button>
+          <button class="act-btn act-del" onclick="deleteNosef(${r.id})" title="מחק">🗑️</button>
+        </td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+function openAddNosefModal() {
+  nosefEditId = null; nosefSplitMode = 'all';
+  document.getElementById('nosef-modal-title').textContent = 'הוספת נוסף';
+  document.getElementById('nosef-desc').value = '';
+  document.getElementById('nosef-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('nosef-amount').value = '';
+  setNosefSplit('all');
+  openModal('modal-nosef');
+}
+window.openEditNosef = function(id) {
+  id = Number(id);
+  const r = (state.nosef||[]).find(x=>x.id===id);
+  if (!r) return;
+  nosefEditId = id;
+  document.getElementById('nosef-modal-title').textContent = 'עריכת נוסף';
+  document.getElementById('nosef-desc').value = r.desc||'';
+  document.getElementById('nosef-date').value = r.date||'';
+  document.getElementById('nosef-amount').value = r.amount||'';
+  nosefSplitMode = (r.persons&&r.persons.length)?'custom':'all';
+  setNosefSplit(nosefSplitMode);
+  openModal('modal-nosef');
+};
+function setNosefSplit(mode) {
+  nosefSplitMode = mode;
+  const allEl = document.getElementById('nosef-split-all');
+  const custEl = document.getElementById('nosef-split-custom');
+  if (!allEl) return;
+  const onS='flex:1;padding:7px;border-radius:8px;border:2px solid var(--teal);background:rgba(46,196,182,0.1);cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--teal)';
+  const offS='flex:1;padding:7px;border-radius:8px;border:2px solid var(--border);cursor:pointer;text-align:center;font-size:12px;font-weight:600;color:var(--muted)';
+  allEl.style.cssText=mode==='all'?onS:offS;
+  custEl.style.cssText=mode==='custom'?onS:offS;
+  document.getElementById('nosef-custom-fields').style.display = mode==='custom'?'':'none';
+  document.getElementById('nosef-split-preview').style.display = mode==='all'?'':'none';
+  updateNosefSplit();
+}
+function updateNosefSplit() {
+  const amt = parseFloat(document.getElementById('nosef-amount')?.value)||0;
+  const recs = titheRecipients();
+  if (nosefSplitMode==='all') {
+    const pp = recs.length ? amt/recs.length : 0;
+    const el = document.getElementById('nosef-split-preview');
+    if (el) el.textContent = recs.map(p=>p.name+': '+fmt(pp)).join(' | ');
+  } else {
+    const cf = document.getElementById('nosef-custom-fields');
+    if (cf) cf.innerHTML = state.persons.map(p=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;min-width:60px">${p.name}</span>
+        <input type="number" id="nosef-p-${p.name}" value="0" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px;text-align:center;padding:6px 4px;outline:none">
+      </div>`).join('');
+  }
+}
+function saveNosef() {
+  const desc = document.getElementById('nosef-desc').value;
+  const date = document.getElementById('nosef-date').value;
+  const amount = parseFloat(document.getElementById('nosef-amount').value)||0;
+  if (!date||!amount) return;
+  let persons = [];
+  if (nosefSplitMode==='custom') {
+    persons = state.persons.map(p=>({name:p.name, amount:parseFloat(document.getElementById('nosef-p-'+p.name)?.value)||0})).filter(p=>p.amount>0);
+  }
+  if (nosefEditId) {
+    const r = state.nosef.find(x=>x.id===nosefEditId);
+    if (r) { r.desc=desc; r.date=date; r.amount=amount; r.persons=persons; }
+  } else {
+    state.nosef.push({id:nextId(), desc, date, amount, persons});
+  }
+  save(); closeModal('modal-nosef'); renderNosef();
+}
+window.deleteNosef = function(id) {
+  if (!confirm('למחוק?')) return;
+  state.nosef = state.nosef.filter(r=>r.id!==Number(id));
+  save(); renderNosef();
+};
+
+// ===================== CATEGORIES =====================
+function renderCategoriesList() {
+  const list = document.getElementById('categories-list');
+  if (!list) return;
+  list.innerHTML = (state.incomeCategories||[]).map((cat,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px">
+      <span style="font-size:14px;font-weight:500">${cat}</span>
+      <div style="display:flex;gap:6px">
+        <button class="act-btn act-del" onclick="deleteCategory(${i})" title="מחק">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+function addCategory() {
+  const inp = document.getElementById('new-category-input');
+  const val = inp.value.trim();
+  if (!val||state.incomeCategories.includes(val)) return;
+  state.incomeCategories.push(val);
+  inp.value='';
+  save(); renderCategoriesList();
+}
+window.deleteCategory = function(i) {
+  if (!confirm('למחוק קטגוריה?')) return;
+  state.incomeCategories.splice(i,1);
+  save(); renderCategoriesList();
+};
+// open manage categories
+const _origOpenModal = openModal;
+window.openModal = function(id) {
+  if (id==='modal-manage-categories') renderCategoriesList();
+  _origOpenModal(id);
+};
+
+// ===================== TITHE =====================
+function updateTdistPreview() {
+  const amt = parseFloat(document.getElementById('tdist-amount').value)||0;
+  const recs = titheRecipients();
+  if (!recs.length || !amt) { document.getElementById('tdist-preview').textContent=''; return; }
+  const pp = amt / recs.length;
+  document.getElementById('tdist-preview').innerHTML = recs.map(p=>
+    `<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--text)">${p.name}</span><span style="color:var(--gold2);font-weight:700">${fmt(pp)}</span></div>`
+  ).join('');
+}
+function saveTitheDist() {
+  const date = document.getElementById('tdist-date').value;
+  const amount = parseFloat(document.getElementById('tdist-amount').value)||0;
+  const note = document.getElementById('tdist-note').value;
+  if (!date || !amount) return;
+  const recs = titheRecipients();
+  const pp = amount / recs.length;
+  state.titheEvents.push({
+    id: nextId(), date, amount, note,
+    shares: recs.map(p=>({name:p.name, amount:pp}))
+  });
+  save(); closeModal('modal-tithe-dist'); renderTithe();
+}
+function renderTithe() {
+  const tt = totalTithe();
+  const pending = pendingTithe();
+  const recs = titheRecipients();
+  const misc = state.miscDist.reduce((a,b)=>a+b.amount,0);
+  const miscPP = recs.length ? misc / recs.length : 0;
+  const distributed = state.titheEvents.reduce((a,e)=>a+e.amount,0);
+  const tosfot = totalTosfot();
+  const tosfotPP = recs.length ? tosfot/recs.length : 0;
+  document.getElementById('tithe-breakdown').innerHTML = `
+    <div class="tithe-card"><div class="tithe-card-title">מעשרות (${state.titheRate}%)</div><div class="tithe-amount">${fmt(tt)}</div><div class="tithe-sub">ממשכורות + שונות</div></div>
+    <div class="tithe-card"><div class="tithe-card-title">חולק עד כה</div><div class="tithe-amount" style="color:var(--green)">${fmt(distributed)}</div></div>
+    <div class="tithe-card"><div class="tithe-card-title">ממתין לחלוקה</div><div class="tithe-amount" style="color:var(--gold2)">${fmt(pending)}</div></div>
+    <div class="tithe-card"><div class="tithe-card-title">תוספות (100%)</div><div class="tithe-amount" style="color:var(--teal)">${fmt(tosfot)}</div><div class="tithe-sub">${fmt(tosfotPP)} לאדם</div></div>
+  `;
+  const ppt = perPersonTithe();
+  const tbody = document.getElementById('tithe-tbody');
+  tbody.innerHTML = recs.map(p=>{
+    const tithe = ppt[p.name]||0;
+    const misc2 = miscDistPerPerson();
+    const tosfotShare = recs.length ? totalTosfot()/recs.length : 0;
+    const total = tithe + misc2 + tosfotShare;
+    const redeemed = redemptionByPerson(p.name);
+    const kupa = total - redeemed;
+    const donRate = state.donationRate/100;
+    const donPeriodRate = state.donationPeriodRate/100;
+    const donation = totalTosfot() * donRate / Math.max(1,recs.length) + kupa * donPeriodRate;
+    return `<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:8px"><span style="background:${p.color};width:10px;height:10px;border-radius:50%;display:inline-block"></span>${p.name}</span></td>
+      <td style="color:var(--gold2);font-weight:700">${fmt(tithe)}</td>
+      <td style="color:var(--teal);font-weight:600">${fmt(tosfotShare)}</td>
+      <td style="color:var(--teal);font-weight:600">${fmt(total)}</td>
+      <td style="color:var(--red)">${fmt(redeemed)}</td>
+      <td style="color:var(--green);font-weight:700">${fmt(kupa)}</td>
+      <td style="color:var(--purple)">${fmt(Math.max(0,donation))}</td>
+    </tr>`;
+  }).join('');
+  // History
+  const hbody = document.getElementById('tithe-hist-tbody');
+  if (hbody) {
+    if (!state.titheEvents.length) { hbody.innerHTML='<tr><td colspan="5" class="empty">אין חלוקות עדיין</td></tr>'; return; }
+    hbody.innerHTML = [...state.titheEvents].reverse().map(ev=>`<tr>
+      <td>${parseD(ev.date)}</td>
+      <td style="color:var(--gold2);font-weight:700">${fmt(ev.amount)}</td>
+      <td style="color:var(--muted);font-size:12px">${(ev.shares||[]).map(s=>`${s.name}: ${fmt(s.amount)}`).join(' | ')}</td>
+      <td style="color:var(--green)">${ev.shares?.length?fmt(ev.amount/ev.shares.length):'-'}</td>
+      <td><button class="act-btn act-del" onclick="deleteTitheEvent(${ev.id})">מחק</button></td>
+    </tr>`).join('');
+  }
+}
+function deleteTitheEvent(id) {
+  if (!confirm('למחוק חלוקה?')) return;
+  state.titheEvents = state.titheEvents.filter(e=>e.id!==id);
+  save(); renderTithe();
+}
+function renderTitheHistory() { renderTithe(); }
+
+// ===================== YEAR-GROUPED TABLE RENDERER =====================
+const tableGroupState = {}; // key -> Set of open years
+
+function renderGroupedTable(tbodyId, data, stateKey, amountColor, hasReason) {
+  const tbody = document.getElementById(tbodyId);
+  if (!data.length) { tbody.innerHTML = `<tr><td colspan="7" class="empty">אין נתונים</td></tr>`; return; }
+  if (!tableGroupState[stateKey]) tableGroupState[stateKey] = new Set();
+  const s = sortState[stateKey];
+  const sorted = s ? getSorted(data, stateKey) : [...data].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  // if sorted, show flat list; if not sorted, show grouped by year
+  if (s) {
+    // flat sorted list with reset button
+    tbody.innerHTML = sorted.map(r => `<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:5px"><span style="background:${personColor(r.name)};width:7px;height:7px;border-radius:50%;display:inline-block"></span>${r.name}</span></td>
+      <td style="color:var(--muted);font-size:12px">${parseD(r.date)}</td>
+      <td style="font-weight:700;color:${amountColor}">${fmt(r.amount)}</td>
+      <td style="color:var(--muted);font-size:12px">${r.reason||''}</td>
+      <td colspan="3" style="white-space:nowrap">
+        <button class="act-btn act-edit" onclick="openEditRecord('${stateKey}',${r.id})" title="ערוך">✏️</button>
+        <button class="act-btn act-del" onclick="deleteRow('${stateKey}',${r.id})" title="מחק">🗑️</button>
+      </td>
+    </tr>`).join('');
+    return;
+  }
+  // grouped by year
+  const byYear = {};
+  sorted.forEach(r => {
+    const yr = r.date ? r.date.substring(0,4) : '?';
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(r);
+  });
+  const years = Object.keys(byYear).sort().reverse();
+  const openSet = tableGroupState[stateKey];
+  let html = '';
+  years.forEach(yr => {
+    const rows = byYear[yr];
+    const total = rows.reduce((a,r)=>a+r.amount,0);
+    const isOpen = !openSet.has(yr);
+    html += `<tr style="background:var(--surface2);cursor:pointer" onclick="toggleGroupYear('${stateKey}','${yr}')">
+      <td colspan="3" style="font-weight:700;font-size:13px;padding:10px 12px">
+        <span style="color:var(--gold2)">${yr}</span>
+        <span style="color:var(--muted);font-size:11px;margin-right:8px">${rows.length} רשומות</span>
+        <span style="float:left;color:var(--muted);font-size:16px">${isOpen?'▲':'▼'}</span>
+      </td>
+      <td colspan="4" style="text-align:left;font-weight:700;color:${amountColor};padding:10px 12px">${fmt(total)}</td>
+    </tr>`;
+    if (isOpen) {
+      rows.forEach(r => {
+        html += `<tr>
+          <td><span style="display:inline-flex;align-items:center;gap:5px"><span style="background:${personColor(r.name)};width:7px;height:7px;border-radius:50%;display:inline-block"></span>${r.name}</span></td>
+          <td style="color:var(--muted);font-size:12px">${parseD(r.date)}</td>
+          <td style="font-weight:700;color:${amountColor}">${fmt(r.amount)}</td>
+          <td style="color:var(--muted);font-size:12px">${r.reason||''}</td>
+          <td colspan="3" style="white-space:nowrap">
+            <button style="padding:3px 8px;font-size:11px;background:transparent;color:var(--teal);border:1px solid var(--teal);border-radius:5px;cursor:pointer;margin-left:4px" onclick="openEditRecord('${stateKey}',${r.id})">ערוך</button>
+            <button style="padding:3px 8px;font-size:11px;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:5px;cursor:pointer" onclick="deleteRow('${stateKey}',${r.id})">מחק</button>
+          </td>
+        </tr>`;
+      });
+    }
+  });
+  tbody.innerHTML = html;
+}
+
+// tableGroupState: Set of CLOSED years per key (not in set = open)
+window.toggleGroupYear = function(stateKey, yr) {
+  if (!tableGroupState[stateKey]) tableGroupState[stateKey] = new Set();
+  const s = tableGroupState[stateKey];
+  if (s.has(yr)) s.delete(yr); else s.add(yr);
+  saveGroupState();
+  // re-render only the relevant section, NOT renderAll (to avoid resetting sub-tab)
+  reRenderKey(stateKey);
+};
+function reRenderKey(k) {
+  if (k==='shonot') renderShonot();
+  else if (k==='nosef'||k==='nosef2') renderTosfot();
+  else if (k==='loans') renderLoans();
+  else if (k==='repayments') renderRepayments();
+  else if (k==='redemptions') renderRedemptions();
+  else if (k==='donations') renderDonations();
+  else if (k==='miscDist') renderMisc();
+  else if (k==='extras') renderExtras();
+  else if (k==='daniels') renderDaniel();
+  else if (k==='miscInc') renderMiscInc();
+}
+function getArrForKey(k) {
+  if (k==='loans') return state.loans||[];
+  if (k==='repayments') return state.repayments||[];
+  if (k==='redemptions') return state.redemptions||[];
+  if (k==='donations') return state.donations||[];
+  if (k==='shonot') return state.shonot||[];
+  if (k==='nosef'||k==='nosef2') return state.nosef||[];
+  if (k==='extras') return state.extras||[];
+  if (k==='daniels') return state.daniels||[];
+  if (k==='miscInc') return state.miscInc||[];
+  if (k==='miscDist') return state.miscDist||[];
+  return [];
+}
+function saveGroupState() {
+  const toSave = {};
+  for (const k in tableGroupState) toSave[k] = [...tableGroupState[k]];
+  try { localStorage.setItem('karenGroupState', JSON.stringify(toSave)); } catch(e){}
+}
+function loadGroupState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('karenGroupState')||'null');
+    if (saved) { for (const k in saved) tableGroupState[k] = new Set(saved[k]); }
+  } catch(e){}
+}
+
+// Sort header helper
+function thSort(label, stateKey, col) {
+  return `<th style="cursor:pointer;user-select:none" onclick="toggleSort('${stateKey}','${col}')">${label} ${sortIcon(stateKey,col)}</th>`;
+}
+function resetSortBtn(stateKey) {
+  return sortState[stateKey]
+    ? `<th style="cursor:pointer;white-space:nowrap" onclick="resetSort('${stateKey}')"><span style="background:rgba(74,144,217,0.15);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600">↺ איפוס</span></th>`
+    : '<th></th>';
+}
+
+// ===================== LOANS =====================
+function renderLoans() {
+  // Update table header with sort
+  const thead = document.querySelector('#all-loans table thead tr');
+  if (thead) thead.innerHTML = thSort('שם','loans','name')+thSort('תאריך','loans','date')+thSort('סכום','loans','amount')+'<th>סיבה</th>'+resetSortBtn('loans')+'<th></th><th></th>';
+  renderGroupedTable('loans-tbody', state.loans, 'loans', 'var(--red)', true);
+}
+function renderRepayments() {
+  const thead2 = document.querySelector('#repayments table thead tr');
+  if (thead2) thead2.innerHTML = thSort('שם','repayments','name')+thSort('תאריך','repayments','date')+thSort('סכום','repayments','amount')+'<th>סיבה</th>'+resetSortBtn('repayments')+'<th></th><th></th>';
+  renderGroupedTable('repay-tbody', state.repayments, 'repayments', 'var(--green)', true);
+}
+function renderBalance() {
+  const tbody = document.getElementById('balance-tbody');
+  const names = [...new Set([...state.loans.map(l=>l.name),...state.repayments.map(r=>r.name)])];
+  tbody.innerHTML = names.map(n=>{
+    const l=totalLoans(n), r=totalRepay(n), debt=l-r;
+    return `<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:6px"><span style="background:${personColor(n)};width:8px;height:8px;border-radius:50%;display:inline-block"></span>${n}</span></td>
+      <td style="color:var(--red);font-weight:600">${fmt(l)}</td>
+      <td style="color:var(--green);font-weight:600">${fmt(r)}</td>
+      <td><span class="badge ${debt>0?'badge-red':'badge-green'}">${fmt(Math.abs(debt))} ${debt>0?'חוב':'עודף'}</span></td>
+    </tr>`;
+  }).join('');
+}
+function addLoan() {
+  state.loans.push({id:nextId(),name:document.getElementById('loan-name').value,date:document.getElementById('loan-date').value,amount:parseFloat(document.getElementById('loan-amount').value)||0,reason:document.getElementById('loan-reason').value});
+  save(); closeModal('modal-loan'); renderLoans(); renderBalance();
+}
+function addRepay() {
+  state.repayments.push({id:nextId(),name:document.getElementById('repay-name').value,date:document.getElementById('repay-date').value,amount:parseFloat(document.getElementById('repay-amount').value)||0,reason:document.getElementById('repay-reason').value});
+  save(); closeModal('modal-repay'); renderRepayments(); renderBalance();
+}
+
+// ===================== REDEMPTIONS =====================
+function renderRedemptions() {
+  const theadR = document.querySelector('#page-redemption .table-wrap table thead tr');
+  if (theadR) theadR.innerHTML = thSort('שם','redemptions','name')+thSort('תאריך','redemptions','date')+thSort('סכום','redemptions','amount')+'<th>סיבה</th>'+resetSortBtn('redemptions')+'<th></th><th></th>';
+  renderGroupedTable('redeem-tbody', state.redemptions, 'redemptions', 'var(--red)', true);
+}
+function addRedeem() {
+  state.redemptions.push({id:nextId(),name:document.getElementById('redeem-name').value,date:document.getElementById('redeem-date').value,amount:parseFloat(document.getElementById('redeem-amount').value)||0,reason:document.getElementById('redeem-reason').value});
+  save(); closeModal('modal-redeem'); renderRedemptions(); renderTithe();
+}
+
+// ===================== DONATIONS =====================
+function renderDonations() {
+  const recs = titheRecipients();
+  const donRate = state.donationRate/100;
+  const donPeriodRate = state.donationPeriodRate/100;
+  const extraBase = (totalExtras()+totalDaniel()) * donRate / Math.max(1,recs.length);
+  document.getElementById('donation-calc').innerHTML = `<div class="summary-bar">
+    <div class="summary-item"><span class="s-label">בסיס תרומה (מתוספת):</span><span class="s-val gold">${fmt(extraBase)} לאדם (${state.donationRate}%)</span></div>
+    <div class="summary-item"><span class="s-label">+ מהקופה האישית:</span><span class="s-val gold">${state.donationPeriodRate}% מהיתרה</span></div>
+    <div class="summary-item"><span class="s-label">סה"כ שנתרם:</span><span class="s-val red">${fmt(state.donations.reduce((a,b)=>a+b.amount,0))}</span></div>
+  </div>`;
+  const tbody = document.getElementById('donation-tbody');
+  const theadD = document.querySelector('#page-donations .table-wrap table thead tr');
+  if (theadD) theadD.innerHTML = thSort('שם','donations','name')+thSort('תאריך','donations','date')+thSort('סכום','donations','amount')+'<th>סיבה</th>'+resetSortBtn('donations')+'<th></th><th></th>';
+  renderGroupedTable('donation-tbody', state.donations, 'donations', 'var(--purple)', true);
+}
+function addDonation() {
+  state.donations.push({id:nextId(),name:document.getElementById('donation-name').value,date:document.getElementById('donation-date').value,amount:parseFloat(document.getElementById('donation-amount').value)||0,reason:document.getElementById('donation-reason').value});
+  save(); closeModal('modal-donation'); renderDonations();
+}
+
+// ===================== MISC DIST =====================
+function renderTosfot() {
+  // update sort headers
+  const th = document.getElementById('tosfot-thead');
+  if (th) th.innerHTML = '<tr>'+thSort('קטגוריה','nosef2','category')+thSort('תאריך','nosef2','date')+thSort('סכום','nosef2','amount')+'<th>מקבלים</th>'+resetSortBtn('nosef2')+'</tr>';
+  const recs = titheRecipients();
+  const allNosef = state.nosef||[];
+  const filterCat = activeCats['nosef2']||null;
+  const allRows = filterCat ? allNosef.filter(r=>r.category===filterCat) : allNosef;
+  // flat sorted view
+  if (sortState['nosef2']) {
+    const flat = getSorted(allRows,'nosef2');
+    const tbody = document.getElementById('tosfot-tbody');
+    if (tbody) tbody.innerHTML = flat.map(r=>{
+      const persons = r.persons&&r.persons.length ? r.persons.map(p=>p.name+':'+fmt(p.amount)).join(', ') : 'כולם';
+      return `<tr>
+        <td><span style="background:rgba(46,196,182,0.12);color:var(--teal);padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600">${r.category||r.desc||''}</span></td>
+        <td style="color:var(--muted);font-size:11px">${parseD(r.date)}</td>
+        <td style="font-weight:700;color:var(--teal)">${fmt(r.amount)}</td>
+        <td style="font-size:11px;color:var(--muted)">${persons}</td>
+        <td><button class="act-btn act-edit" onclick="openEditNosef(${r.id})">✏️</button><button class="act-btn act-del" onclick="deleteNosef(${r.id})">🗑️</button></td>
+      </tr>`;
+    }).join('');
+    const bar = document.getElementById('tosfot-summary-bar');
+    if (bar) bar.innerHTML = '<div class="summary-item"><span class="s-label">סה"כ:</span><span class="s-val gold">'+fmt(allRows.reduce((a,r)=>a+r.amount,0))+'</span></div>';
+    return;
+  }
+  const rows = allRows;
+  const total = allNosef.reduce((a,r)=>a+r.amount,0);
+  const pp = recs.length ? total/recs.length : 0;
+  const bar = document.getElementById('tosfot-summary-bar');
+  if (bar) bar.innerHTML = `
+    <div class="summary-item"><span class="s-label">סה"כ:</span><span class="s-val gold">${fmt(total)}</span></div>
+    <div class="summary-item"><span class="s-label">לכל אחד:</span><span class="s-val green">${fmt(pp)}</span></div>
+    <div class="summary-item"><span class="s-label">מקבלים:</span><span class="s-val">${recs.length}</span></div>
+  `;
+  const tbody = document.getElementById('tosfot-tbody');
+  if (!tbody) return;
+  if (!rows.length) { tbody.innerHTML='<tr><td colspan="5" class="empty">אין נתונים</td></tr>'; return; }
+  if (!tableGroupState['nosef2']) tableGroupState['nosef2'] = new Set(['all']);
+  const openSet = tableGroupState['nosef2'];
+  const byYear = {};
+  rows.forEach(r=>{ const yr=r.date?r.date.substring(0,4):'?'; if(!byYear[yr])byYear[yr]=[]; byYear[yr].push(r); });
+  const years = Object.keys(byYear).sort().reverse();
+  let html = '';
+  years.forEach(yr=>{
+    const yrows = byYear[yr];
+    const ytotal = yrows.reduce((a,r)=>a+r.amount,0);
+    const isOpen = !openSet.has(yr);
+    html += `<tr style="background:var(--surface2);cursor:pointer" onclick="toggleGroupYear('nosef2','${yr}')">
+      <td colspan="3" style="font-weight:700;font-size:12px;padding:6px 7px"><span style="color:var(--teal)">${yr}</span> <span style="color:var(--muted);font-size:11px">${yrows.length} רשומות</span><span style="float:left">${isOpen?'▲':'▼'}</span></td>
+      <td colspan="2" style="text-align:left;font-weight:700;color:var(--teal);padding:6px 7px">${fmt(ytotal)}</td>
+    </tr>`;
+    if (isOpen) yrows.forEach(r=>{
+      const persons = r.persons&&r.persons.length ? r.persons.map(p=>p.name+':'+fmt(p.amount)).join(', ') : 'כולם';
+      html += `<tr>
+        <td><span style="background:rgba(46,196,182,0.12);color:var(--teal);padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600">${r.category||r.desc||''}</span></td>
+        <td style="color:var(--muted);font-size:11px">${parseD(r.date)}</td>
+        <td style="font-weight:700;color:var(--teal)">${fmt(r.amount)}</td>
+        <td style="font-size:11px;color:var(--muted)">${persons}</td>
+        <td style="white-space:nowrap">
+          <button class="act-btn act-edit" onclick="openEditNosef(${r.id})" title="ערוך">✏️</button>
+          <button class="act-btn act-del" onclick="deleteNosef(${r.id})" title="מחק">🗑️</button>
+        </td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+// keep activeCats nosef2
+if (!activeCats['nosef2']) activeCats['nosef2'] = null;
+
+function renderMisc() {
+  renderTosfot();
+  const total = state.miscDist.reduce((a,b)=>a+b.amount,0);
+  const recs = titheRecipients();
+  const pp = recs.length ? total/recs.length : 0;
+  document.getElementById('misc-summary-bar') && (document.getElementById('misc-summary-bar').innerHTML = '');
+  const tbody = document.getElementById('misc-tbody');
+  const miscSorted = getSorted(state.miscDist,'miscDist');
+  const theadM = document.querySelector('#page-misc .table-wrap table thead tr');
+  if (theadM) theadM.innerHTML = '<th>תיאור</th>'+thSort('תאריך','miscDist','date')+thSort('סכום','miscDist','amount')+'<th>לכל אחד</th><th></th><th></th>';
+  const tbody2 = document.getElementById('misc-tbody');
+  if (!miscSorted.length) { tbody2.innerHTML='<tr><td colspan="6" class="empty">אין נתונים</td></tr>'; return; }
+  tbody2.innerHTML = miscSorted.map((d,i)=>`<tr>
+    <td>${d.desc}</td>
+    <td style="color:var(--muted);font-size:12px">${parseD(d.date)}</td>
+    <td style="font-weight:700;color:var(--blue)">${fmt(d.amount)}</td>
+    <td style="color:var(--green);font-weight:600">${fmt(d.amount/Math.max(1,titheRecipients().length))}</td>
+    <td colspan="2" style="white-space:nowrap">
+      <button style="padding:3px 8px;font-size:11px;background:transparent;color:var(--teal);border:1px solid var(--teal);border-radius:5px;cursor:pointer;margin-left:4px" onclick="openEditRecord('miscDist',${d.id})">ערוך</button>
+      <button style="padding:3px 8px;font-size:11px;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:5px;cursor:pointer" onclick="deleteRow('miscDist',${d.id})">מחק</button>
+    </td>
+  </tr>`).join('');
+}
+function addMisc() {
+  state.miscDist.push({id:nextId(),desc:document.getElementById('misc-desc').value,date:document.getElementById('misc-date').value,amount:parseFloat(document.getElementById('misc-amount').value)||0});
+  save(); closeModal('modal-misc'); renderMisc();
+}
+
+// ===================== PERSONS =====================
+const personRoles = { 'tithe-member': false, 'tithe-giver': false, 'can-loan': false };
+const editPersonRoles = { 'tithe-member': false, 'tithe-giver': false, 'can-loan': false };
+let editPersonId = null;
+
+function setToggleUI(prefix, roles) {
+  Object.entries(roles).forEach(([key, val]) => {
+    const el = document.getElementById(`${prefix}tog-${key}`);
+    const icon = document.getElementById(`${prefix}togicon-${key}`);
+    if (!el || !icon) return;
+    if (val) {
+      el.style.borderColor = 'var(--gold)';
+      el.style.background = 'rgba(201,168,76,0.1)';
+      icon.textContent = '✓';
+      icon.style.color = 'var(--gold2)';
+    } else {
+      el.style.borderColor = 'var(--border)';
+      el.style.background = '';
+      icon.textContent = '○';
+      icon.style.color = 'var(--muted)';
+    }
+  });
+}
+
+function togglePersonRole(key) {
+  personRoles[key] = !personRoles[key];
+  setToggleUI('', personRoles);
+}
+function toggleEditPersonRole(key) {
+  editPersonRoles[key] = !editPersonRoles[key];
+  setToggleUI('e', editPersonRoles);
+}
+
+function openPersonModal() {
+  // reset
+  Object.keys(personRoles).forEach(k => personRoles[k] = false);
+  setToggleUI('', personRoles);
+  document.getElementById('person-name-input').value = '';
+  document.getElementById('person-color').value = '#c9a84c';
+  openModal('modal-person');
+}
+
+function openEditPersonModal(id) {
+  const p = state.persons.find(x => x.id === id);
+  if (!p) return;
+  editPersonId = id;
+  document.getElementById('edit-person-name').value = p.name;
+  document.getElementById('edit-person-color').value = p.color || '#c9a84c';
+  editPersonRoles['tithe-member'] = !!p.titheRecipient;
+  editPersonRoles['tithe-giver'] = !!p.titheGiver;
+  editPersonRoles['can-loan'] = !!p.canLoan;
+  setToggleUI('e', editPersonRoles);
+  openModal('modal-edit-person');
+}
+
+function saveEditPerson() {
+  const p = state.persons.find(x => x.id === editPersonId);
+  if (!p) return;
+  p.name = document.getElementById('edit-person-name').value.trim() || p.name;
+  p.color = document.getElementById('edit-person-color').value;
+  p.titheRecipient = editPersonRoles['tithe-member'];
+  p.titheGiver = editPersonRoles['tithe-giver'];
+  p.canLoan = editPersonRoles['can-loan'];
+  save(); closeModal('modal-edit-person'); renderPersonsList(); refreshSelects();
+}
+
+function renderPersonsList() {
+  document.getElementById('persons-list').innerHTML = state.persons.map(p=>`
+    <div class="person-item">
+      <div class="person-item-name"><span class="person-dot" style="background:${p.color}"></span>${p.name}</div>
+      <div class="person-item-badges">
+        ${p.titheRecipient?'<span class="badge badge-gold">מקבל מעשרות</span>':''}
+        ${p.titheGiver?'<span class="badge" style="background:rgba(46,196,182,0.15);color:var(--teal)">גם מקבל</span>':''}
+        ${p.canLoan?'<span class="badge badge-blue">יכול ללוות</span>':''}
+      </div>
+      <div class="person-item-actions">
+        <button style="padding:5px 12px;font-size:12px;background:transparent;color:var(--teal);border:1px solid var(--teal);border-radius:7px;cursor:pointer;margin-left:6px" onclick="openEditPersonModal(${p.id})">ערוך</button>
+        <button class="btn btn-danger" onclick="deletePerson(${p.id})">מחק</button>
+      </div>
+    </div>`).join('');
+}
+function addPerson() {
+  const name = document.getElementById('person-name-input').value.trim();
+  if (!name) return;
+  state.persons.push({id:nextId(),name,color:document.getElementById('person-color').value,titheRecipient:personRoles['tithe-member'],titheGiver:personRoles['tithe-giver'],canLoan:personRoles['can-loan']});
+  save(); closeModal('modal-person'); renderPersonsList(); refreshSelects();
+}
+function deletePerson(id) {
+  if (!confirm('למחוק אדם?')) return;
+  state.persons = state.persons.filter(p=>p.id!==id);
+  save(); renderPersonsList(); refreshSelects();
+}
+
+// ===================== SELECT REFRESH =====================
+function refreshSelects() {
+  const allNames = state.persons.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  const loanNames = state.persons.filter(p=>p.canLoan).map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  document.getElementById('loan-name').innerHTML = '<option value="">-- בחר --</option>' + loanNames;
+  document.getElementById('repay-name').innerHTML = '<option value="">-- בחר --</option>' + loanNames;
+  document.getElementById('redeem-name').innerHTML = '<option value="">-- בחר --</option>' + allNames;
+  document.getElementById('donation-name').innerHTML = '<option value="">-- בחר --</option>' + allNames;
+}
+
+// ===================== MODALS =====================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+
+// ===================== TITHE CHANGE =====================
+function onTitheChange() { renderAll(); }
+function renderAll() {
+  const tr = document.getElementById('titheRate'), trD = document.getElementById('titheRateD');
+  const dr = document.getElementById('donationRate'), drD = document.getElementById('donationRateD');
+  const dpr = document.getElementById('donationPeriodRate'), dprD = document.getElementById('donationPeriodRateD');
+  state.titheRate = parseFloat((tr||trD).value)||20;
+  state.donationRate = parseFloat((dr||drD).value)||50;
+  state.donationPeriodRate = parseFloat((dpr||dprD).value)||50;
+  save();
+  const activePage = document.querySelector('.page.active');
+  if (activePage) renderPage(activePage.id.replace('page-',''));
+}
+
+// ===================== QUICK INCOME =====================
+let incType = null;
+let titheSplitMode = 'equal';
+
+function selectIncType(type) {
+  incType = type;
+  ['salary','shonot','nosef'].forEach(t => {
+    const el = document.getElementById('inc-type-'+t);
+    if (el) { el.style.borderColor=t===type?'var(--gold)':'var(--border)'; el.style.background=t===type?'rgba(201,168,76,0.12)':''; el.style.color=t===type?'var(--gold2)':''; }
+  });
+  document.getElementById('inc-salary-fields').style.display = type==='salary'?'':'none';
+  document.getElementById('inc-other-fields').style.display = type!=='salary'?'':'none';
+  document.getElementById('inc-tithe-section').style.display = type==='shonot'?'':'none';
+  const scg=document.getElementById('inc-shonot-cat-group');
+  if(scg) scg.style.display=type==='shonot'?'':'none';
+  if(type==='shonot'){const s=document.getElementById('inc-shonot-cat');if(s)s.innerHTML=(state.incomeCategories||[]).map(c=>`<option value="${c}">${c}</option>`).join('');}
+  updateTithePreview();
+}
+
+function updateTithePreview() {
+  const amt = parseFloat(document.getElementById('inc-other-amount').value)||0;
+  const titheAmt = amt * (state.titheRate/100);
+  document.getElementById('tithe-preview-amt').textContent = fmt(titheAmt);
+  const recs = titheRecipients();
+  const pp = recs.length ? titheAmt/recs.length : 0;
+  document.getElementById('tsplit-equal-preview').textContent =
+    recs.length ? recs.map(p=>p.name+': '+fmt(pp)).join(' | ') : 'אין מקבלים מוגדרים';
+  if (titheSplitMode==='custom') buildCustomSplit(titheAmt);
+}
+
+function setTitheSplitMode(mode) {
+  titheSplitMode = mode;
+  const eq = document.getElementById('tsplit-equal');
+  const cu = document.getElementById('tsplit-custom');
+  if (mode==='equal') {
+    eq.style.borderColor='var(--gold)'; eq.style.background='rgba(201,168,76,0.1)'; eq.style.color='var(--gold2)';
+    cu.style.borderColor='var(--border)'; cu.style.background=''; cu.style.color='var(--muted)';
+    document.getElementById('tsplit-equal-preview').style.display='';
+    document.getElementById('tsplit-custom-fields').style.display='none';
+  } else {
+    cu.style.borderColor='var(--gold)'; cu.style.background='rgba(201,168,76,0.1)'; cu.style.color='var(--gold2)';
+    eq.style.borderColor='var(--border)'; eq.style.background=''; eq.style.color='var(--muted)';
+    document.getElementById('tsplit-equal-preview').style.display='none';
+    document.getElementById('tsplit-custom-fields').style.display='';
+    const amt = parseFloat(document.getElementById('inc-other-amount').value)||0;
+    buildCustomSplit(amt * (state.titheRate/100));
+  }
+}
+
+function buildCustomSplit(titheAmt) {
+  const recs = titheRecipients();
+  const pp = recs.length ? Math.round(titheAmt/recs.length) : 0;
+  document.getElementById('tsplit-custom-fields').innerHTML =
+    recs.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+      <span style="font-size:13px;font-weight:600;min-width:60px">${p.name}</span>
+      <input type="number" id="tsplit-${p.name}" value="${pp}" style="flex:1;background:var(--surface);border:1px solid var(--gold);border-radius:8px;color:var(--gold2);font-family:Heebo,sans-serif;font-size:14px;text-align:center;padding:6px 4px;outline:none">
+      <span style="font-size:11px;color:var(--muted)">₪</span>
+    </div>`).join('');
+}
+
+function openAddIncomeModal() {
+  incType = null; titheSplitMode = 'equal';
+  ['salary','extra','daniel','miscinc'].forEach(t => {
+    const el = document.getElementById('inc-type-'+t);
+    if (el) { el.style.borderColor='var(--border)'; el.style.background=''; el.style.color=''; }
+  });
+  document.getElementById('inc-salary-fields').style.display='none';
+  document.getElementById('inc-other-fields').style.display='none';
+  document.getElementById('inc-tithe-section').style.display='none';
+  // populate year select
+  const yrSel = document.getElementById('inc-sal-year');
+  const years = Object.keys(state.salaries).sort().reverse();
+  yrSel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  // reset fields
+  document.getElementById('inc-other-desc').value='';
+  document.getElementById('inc-other-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('inc-other-amount').value='';
+  openModal('modal-add-income');
+}
+
+function saveQuickIncome() {
+  if (!incType) { alert('בחר סוג הכנסה'); return; }
+  if (incType==='salary') {
+    const yr = document.getElementById('inc-sal-year').value;
+    const m = parseInt(document.getElementById('inc-sal-month').value);
+    const amt = parseFloat(document.getElementById('inc-sal-amount').value)||0;
+    if (!state.salaries[yr]) state.salaries[yr] = new Array(12).fill(0);
+    state.salaries[yr][m] = amt;
+  } else {
+    const desc = document.getElementById('inc-other-desc').value || '—';
+    const date = document.getElementById('inc-other-date').value;
+    const amount = parseFloat(document.getElementById('inc-other-amount').value)||0;
+    if (!date || !amount) { alert('מלא תאריך וסכום'); return; }
+    const id = nextId();
+    if (incType==='shonot') {
+      const cat = document.getElementById('inc-shonot-cat')?.value || 'הכנסה כללית';
+      if (!state.shonot) state.shonot=[];
+      state.shonot.push({id,category:cat,desc,date,amount});
+    } else if (incType==='nosef') {
+      if (!state.nosef) state.nosef=[];
+      state.nosef.push({id,desc,date,amount,persons:[]});
+    } else if (incType==='extra') state.extras.push({id,desc,date,amount});
+    else if (incType==='daniel') state.daniels.push({id,desc,date,amount});
+    else if (incType==='miscinc') state.miscInc.push({id,desc,date,amount});
+    // save tithe event for shonot only
+    if (incType==='shonot') {
+      const titheAmt = amount * (state.titheRate/100);
+      const recs = titheRecipients();
+      if (recs.length && titheAmt > 0) {
+        let shares;
+        if (titheSplitMode==='equal') { const pp=titheAmt/recs.length; shares=recs.map(p=>({name:p.name,amount:pp})); }
+        else shares=recs.map(p=>({name:p.name,amount:parseFloat(document.getElementById('tsplit-'+p.name)?.value)||0}));
+        state.titheEvents.push({id:nextId(),date,amount:titheAmt,note:'שונות',shares});
+      }
+    }
+  }
+  save(); closeModal('modal-add-income'); renderAll();
+}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', function() {
+  if (!state.shonot) state.shonot = [];
+  if (!state.nosef) state.nosef = [];
+  if (!state.incomeCategories) state.incomeCategories = ['הובלות דניאל','משלוח חזי','עבודה נוספת'];
+  save();
+  refreshSelects();
+  ['titheRate','titheRateD'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=state.titheRate; });
+  ['donationRate','donationRateD'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=state.donationRate; });
+  ['donationPeriodRate','donationPeriodRateD'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=state.donationPeriodRate; });
+  loadGroupState();
+  setNav('dashboard');
+  if(state.theme==='light') setTheme('light');
+  renderDashboard();
+});
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW registered'))
+      .catch(e => console.log('SW failed:', e));
+  });
+}
+</script>
+</body>
+</html>
