@@ -10,6 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="קרן סיוע">
+<meta http-equiv="Cross-Origin-Opener-Policy" content="unsafe-none">
+<meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
+<script src="https://accounts.google.com/gsi/client" async></script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -631,9 +634,20 @@ tr:active td{background:rgba(255,255,255,0.03);}
     <input type="number" id="donationPeriodRate" value="50" min="0" max="100" onchange="syncSettings('donationPeriodRate')">
     <span>% מקופה</span>
   </div>
-  <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+  <!-- Google Drive -->
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">☁️ גיבוי ענן</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span id="gd-status" style="font-size:12px;color:var(--muted)">☁️ לא מחובר</span>
+      <span id="gd-user" style="font-size:11px;color:var(--teal);display:none"></span>
+    </div>
+    <button id="gd-btn" onclick="gdLogin()" style="width:100%;padding:10px;border-radius:10px;background:rgba(74,144,217,0.1);color:var(--blue);border:1px solid var(--blue);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">☁️ חיבור Google Drive</button>
+  </div>
+  <!-- Data management -->
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
     <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">ניהול נתונים</div>
     <div style="display:flex;flex-direction:column;gap:8px">
+      <button id="pwa-install-btn" onclick="pwaInstall()" style="display:none;width:100%;padding:10px;border-radius:10px;background:rgba(201,168,76,0.1);color:var(--gold2);border:1px solid var(--gold);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📲 התקן כאפליקציה</button>
       <button onclick="exportData()" style="width:100%;padding:10px;border-radius:10px;background:rgba(46,196,182,0.1);color:var(--teal);border:1px solid var(--teal);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📤 ייצוא נתונים (JSON)</button>
       <button onclick="document.getElementById('import-file').click()" style="width:100%;padding:10px;border-radius:10px;background:rgba(74,144,217,0.1);color:var(--blue);border:1px solid var(--blue);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📥 ייבוא נתונים (JSON)</button>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
@@ -2672,6 +2686,184 @@ function saveQuickIncome() {
   save(); closeModal('modal-add-income'); renderAll();
 }
 
+// ===================== GOOGLE DRIVE SYNC =====================
+const GD_CLIENT_ID = '339596166863-fmdletmdvd5lm3uavrreltdhvjunt80p.apps.googleusercontent.com';
+const GD_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+const GD_FILE = 'karen_siua_data.json';
+
+let gdToken = null, gdTokenExpiry = 0, gdUserId = null, gdFileId = null, gdSyncing = false, gdDirty = false;
+
+function gdUserKey(k) { return gdUserId ? `ks_${gdUserId}_${k}` : null; }
+function gdSetStatus(txt, color) {
+  const s = document.getElementById('gd-status');
+  if (s) { s.textContent = txt; s.style.color = color || 'var(--muted)'; }
+}
+function gdIsTokenValid() { return gdToken && Date.now() < gdTokenExpiry - 60000; }
+
+function gdLogin() {
+  if (!window.google || !window.google.accounts) {
+    let tries = 0;
+    const wait = setInterval(() => {
+      tries++;
+      if (window.google && window.google.accounts) { clearInterval(wait); _doGdLogin(); }
+      else if (tries > 16) { clearInterval(wait); gdSetStatus('⚠️ Google לא נטען', 'var(--red)'); }
+    }, 500);
+    return;
+  }
+  _doGdLogin();
+}
+
+function _doGdLogin() {
+  try {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GD_CLIENT_ID,
+      scope: GD_SCOPE + ' https://www.googleapis.com/auth/userinfo.profile',
+      prompt: 'select_account',
+      callback: async (resp) => {
+        if (resp.error) { gdSetStatus('❌ שגיאת התחברות', 'var(--red)'); return; }
+        gdToken = resp.access_token;
+        gdTokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
+        try {
+          const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { 'Authorization': 'Bearer ' + gdToken } });
+          const u = await r.json();
+          gdUserId = u.id;
+          localStorage.setItem('ks_gd_user', gdUserId);
+          const fid = localStorage.getItem(gdUserKey('fid'));
+          if (fid) gdFileId = fid;
+        } catch(e) {}
+        await gdSync();
+        renderGdUI();
+      }
+    });
+    client.requestAccessToken();
+  } catch(e) { gdSetStatus('❌ ' + e.message, 'var(--red)'); }
+}
+
+function gdLogout() {
+  gdToken = null; gdFileId = null; gdUserId = null;
+  localStorage.removeItem('ks_gd_user');
+  gdSetStatus('☁️ לא מחובר', 'var(--muted)');
+  renderGdUI();
+}
+
+async function gdFindFile() {
+  const r = await fetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${GD_FILE}'&fields=files(id,name)`, { headers: { 'Authorization': 'Bearer ' + gdToken } });
+  const j = await r.json();
+  return j.files && j.files.length ? j.files[0].id : null;
+}
+
+async function gdSave() {
+  if (!gdToken || gdSyncing) { gdDirty = true; return; }
+  gdSyncing = true; gdDirty = false;
+  gdSetStatus('💾 שומר...', 'var(--gold2)');
+  try {
+    const body = JSON.stringify({ ...state, _savedAt: Date.now() });
+    const blob = new Blob([body], { type: 'application/json' });
+    if (gdFileId) {
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${gdFileId}?uploadType=media`, {
+        method: 'PATCH', headers: { 'Authorization': 'Bearer ' + gdToken, 'Content-Type': 'application/json' }, body });
+    } else {
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({ name: GD_FILE, parents: ['appDataFolder'] })], { type: 'application/json' }));
+      form.append('file', blob);
+      const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + gdToken }, body: form });
+      const j = await r.json();
+      gdFileId = j.id;
+      if (gdUserKey('fid')) localStorage.setItem(gdUserKey('fid'), gdFileId);
+    }
+    const t = new Date().toLocaleString('he-IL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    gdSetStatus('✅ נשמר ' + t, 'var(--green)');
+  } catch(e) { gdSetStatus('❌ שגיאת שמירה', 'var(--red)'); }
+  gdSyncing = false;
+  if (gdDirty) gdSave();
+}
+
+async function gdLoad() {
+  if (!gdToken || !gdFileId) return false;
+  try {
+    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${gdFileId}?alt=media`, { headers: { 'Authorization': 'Bearer ' + gdToken } });
+    if (!r.ok) return false;
+    const d = await r.json();
+    if (d && d._sv) {
+      state = d;
+      localStorage.setItem('karenSiua', JSON.stringify(state));
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+async function gdSync() {
+  if (!gdToken) return;
+  gdSetStatus('🔄 מסנכרן...', 'var(--blue)');
+  if (!gdFileId) { const id = await gdFindFile(); if (id) { gdFileId = id; if(gdUserKey('fid')) localStorage.setItem(gdUserKey('fid'), id); } }
+  if (gdFileId) {
+    try {
+      const hdr = await fetch(`https://www.googleapis.com/drive/v3/files/${gdFileId}?fields=modifiedTime`, { headers: { 'Authorization': 'Bearer ' + gdToken } });
+      const meta = await hdr.json();
+      const cloudTs = meta.modifiedTime ? new Date(meta.modifiedTime).getTime() : 0;
+      const localTs = state._savedAt || 0;
+      if (cloudTs > localTs) {
+        const loaded = await gdLoad();
+        if (loaded) { renderAll(); gdSetStatus('☁️ נטען מהענן', 'var(--teal)'); return; }
+      }
+    } catch(e) {}
+  }
+  await gdSave();
+}
+
+function renderGdUI() {
+  const btn = document.getElementById('gd-btn');
+  const user = document.getElementById('gd-user');
+  if (!btn) return;
+  if (gdToken) {
+    btn.textContent = 'התנתק';
+    btn.style.background = 'rgba(224,82,96,0.15)';
+    btn.style.color = 'var(--red)';
+    btn.style.borderColor = 'var(--red)';
+    btn.onclick = gdLogout;
+    if (user) user.style.display = '';
+  } else {
+    btn.textContent = '☁️ חיבור Google Drive';
+    btn.style.background = 'rgba(74,144,217,0.15)';
+    btn.style.color = 'var(--blue)';
+    btn.style.borderColor = 'var(--blue)';
+    btn.onclick = gdLogin;
+    if (user) user.style.display = 'none';
+  }
+}
+
+// Auto-save to Drive after local save
+const _origSave = save;
+window.save = function() {
+  _origSave();
+  state._savedAt = Date.now();
+  if (gdToken && gdIsTokenValid()) {
+    clearTimeout(window._gdSaveTimer);
+    window._gdSaveTimer = setTimeout(gdSave, 2000);
+  }
+};
+
+// ===================== PWA INSTALL =====================
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = '';
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
+});
+function pwaInstall() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
+}
+
 // ===================== INIT =====================
 document.addEventListener('DOMContentLoaded', function() {
   if (!state.shonot) state.shonot = [];
@@ -2686,6 +2878,10 @@ document.addEventListener('DOMContentLoaded', function() {
   setNav('dashboard');
   if(state.theme==='light') setTheme('light');
   renderDashboard();
+  // restore GD user if was logged in
+  const _gdUser = localStorage.getItem('ks_gd_user');
+  if (_gdUser) { gdUserId = _gdUser; const fid = localStorage.getItem(gdUserKey('fid')); if(fid) gdFileId = fid; }
+  renderGdUI();
 });
 </script>
 <script>
