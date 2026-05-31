@@ -2,7 +2,7 @@
   "name": "קרן סיוע",
   "short_name": "קרן סיוע",
   "description": "מערכת ניהול קרן סיוע",
-  "start_url": "./index.html",
+  "start_url": "/karen-siua/",
   "display": "standalone",
   "background_color": "#0f1117",
   "theme_color": "#c9a84c",
@@ -22,5 +22,7 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "scope": "/karen-siua/",
+  "prefer_related_applications": false
 }
