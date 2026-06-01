@@ -14,45 +14,60 @@
 <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
 <script src="https://accounts.google.com/gsi/client" async></script>
 <link rel="manifest" id="pwaManifest">
-<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="קרן סיוע">
 <meta name="theme-color" content="#c9a84c">
 <script>
 (function(){
-  const manifest = JSON.stringify({
-    name:'קרן סיוע',short_name:'קרן סיוע',description:'מערכת ניהול קרן סיוע',
-    start_url:location.pathname,display:'standalone',background_color:'#0a0e14',
-    theme_color:'#c9a84c',dir:'rtl',lang:'he',orientation:'portrait',
-    icons:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png','purpose':'any maskable'}]
-  });
-  const blob=new Blob([manifest],{type:'application/json'});
-  document.getElementById('pwaManifest').href=URL.createObjectURL(blob);
+  // Inline manifest — works on ANY domain without external manifest.json file
+  const manifest = {
+    name: 'קרן סיוע',
+    short_name: 'קרן סיוע',
+    description: 'מערכת ניהול קרן סיוע',
+    start_url: location.pathname + location.search,
+    scope: location.pathname,
+    display: 'standalone',
+    background_color: '#0a0e14',
+    theme_color: '#c9a84c',
+    dir: 'rtl',
+    lang: 'he',
+    orientation: 'portrait',
+    icons: [
+      { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+  document.getElementById('pwaManifest').href = URL.createObjectURL(blob);
 })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&family=Frank+Ruhl+Libre:wght@300;400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{
-  --bg:#0a0e14;--sf:#131820;--sf2:#1c2330;--sf3:#242d3b;
-  --bd:#2a3547;--ac:#00c896;--ac2:#3b82f6;--ac3:#f59e0b;
-  --ac4:#ec4899;--tx:#e2eaf4;--tx2:#8899b0;--tx3:#5c6e84;
-  --er:#ef4444;--ok:#22c55e;--r:14px;--rs:9px;--fn:'Heebo',sans-serif;
-  --bnav-h:64px;
-  /* legacy aliases for existing code */
-  --surface:var(--sf);--surface2:var(--sf2);--border:var(--bd);
-  --text:var(--tx);--muted:var(--tx2);--muted2:var(--tx3);
-  --teal:var(--ac);--blue:var(--ac2);--gold:#c9a84c;--gold2:#e8c97a;
-  --red:var(--er);--green:var(--ok);--purple:#a855f7;
-  --radius:var(--r);--nav-h:var(--bnav-h);--header-h:56px;
+:root {
+  --bg: #0f1117;
+  --surface: #181b24;
+  --surface2: #1f2334;
+  --border: #2a2f45;
+  --gold: #c9a84c;
+  --gold2: #e8c97a;
+  --teal: #2ec4b6;
+  --red: #e05260;
+  --green: #3cb371;
+  --blue: #4a90d9;
+  --purple: #7c5cbf;
+  --text: #e8e8f0;
+  --muted: #7a7f9a;
+  --radius: 14px;
+  --nav-h: 62px;
+  --header-h: 52px;
 }
-body.light{
-  --bg:#f0f4f8;--sf:#ffffff;--sf2:#e8eef5;--sf3:#dde5ee;
-  --bd:#c8d5e3;--tx:#1a2332;--tx2:#4a5e74;--tx3:#7a92a8;
-  --er:#dc2626;--ok:#16a34a;
+body.light-mode {
+  --bg:#f0f2f8; --surface:#ffffff; --surface2:#e8ecf5; --border:#c8cfe0;
+  --text:#1a1d2e; --muted:#5a6080; --gold2:#8a6010;
+  --teal:#1a9e96; --red:#c03040; --green:#277a4c; --blue:#2a6eb0; --purple:#5c3ea0;
 }
-body.light-mode{--bg:#f0f4f8;--sf:#ffffff;--sf2:#e8eef5;--sf3:#dde5ee;--bd:#c8d5e3;--tx:#1a2332;--tx2:#4a5e74;--tx3:#7a92a8;--er:#dc2626;--ok:#16a34a;}
 body.light-mode { background:var(--bg) !important; color:var(--text) !important; }
 body.light-mode header { background:#fff !important; border-bottom-color:var(--border) !important; }
 body.light-mode main { background:var(--bg) !important; }
@@ -88,10 +103,10 @@ body {
   font-size: 15px;
 }
 
-/* ---- Header (ev-tracker style) ---- */
+/* ---- Header ---- */
 header {
-  background: linear-gradient(160deg,#0d1522,#131820);
-  border-bottom: 1px solid var(--bd);
+  background: linear-gradient(135deg, #1a1d2e 0%, #0f1117 100%);
+  border-bottom: 1px solid var(--border);
   padding: 0 16px;
   display: flex;
   align-items: center;
@@ -101,9 +116,8 @@ header {
   top: 0; left: 0; right: 0;
   z-index: 200;
 }
-.logo { font-family: var(--fn); font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px; }
-.logo span { background: linear-gradient(90deg,#c9a84c,#e8c97a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.logo small { color: var(--tx3); font-size: 0.65rem; font-weight: 400; display: block; line-height: 1; margin-top:1px; font-family: var(--fn); }
+.logo { font-family: 'Frank Ruhl Libre', serif; font-size: 20px; font-weight: 700; color: var(--gold2); }
+.logo small { color: var(--muted); font-size: 11px; font-family: 'Heebo', sans-serif; font-weight: 300; display: block; line-height: 1; }
 .settings-btn {
   width: 38px; height: 38px;
   border-radius: 10px;
@@ -177,7 +191,14 @@ header {
 }
 .nav-item .nav-icon { font-size: 20px; line-height: 1; }
 .nav-item.active { color: var(--gold2); }
-/* nav active handled by color only */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--gold2);
+  border-radius: 0 0 3px 3px;
+}
 /* FAB add button */
 .nav-fab {
   width: 56px; height: 56px;
@@ -600,13 +621,12 @@ tr:active td{background:rgba(255,255,255,0.03);}
   outline: none;
   font-family: 'Heebo', sans-serif;
 }
-@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 </style>
+</head>
 <body>
 
 <header>
-  <div class="logo"><span>קרן סיוע</span><small>מערכת ניהול</small></div>
+  <div class="logo">קרן סיוע<small>מערכת ניהול</small></div>
   <div class="header-settings-inline">
     <span>מעשרות:</span>
     <input type="number" id="titheRateD" value="20" min="1" max="100" onchange="syncSettings('titheRateD')"> <span>%</span>
@@ -671,36 +691,26 @@ tr:active td{background:rgba(255,255,255,0.03);}
   <div class="desktop-tab" onclick="showPage('donations',this)">🕍 הנצחה</div>
   <div class="desktop-tab" onclick="showPage('misc',this)">💸 תוספות</div>
   <div class="desktop-tab" onclick="showPage('persons',this)">👥 אנשים</div>
-  <div class="desktop-tab" onclick="showPage('backup',this)">☁️ גיבויים</div>
 </div>
 
-<nav class="bottom-nav" style="display:flex;align-items:center;justify-content:space-around;position:fixed;bottom:0;left:0;right:0;height:var(--bnav-h);background:var(--sf);border-top:1px solid var(--bd);z-index:250;padding:0 8px;padding-bottom:env(safe-area-inset-bottom,0px);">
-  <button style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;background:none;border:none;cursor:pointer;color:var(--tx3);font-family:var(--fn);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px 4px;" id="nav-menu" onclick="toggleMainMenu()">
-    <svg width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    תפריט
-  </button>
-  <button style="flex:0 0 60px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#c9a84c,#a07020);color:#0a0e14;font-size:28px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(201,168,76,.45);margin-bottom:12px;transform:translateY(-6px);" id="nav-add" onclick="openAddIncomeModal()">＋</button>
-  <button style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;background:none;border:none;cursor:pointer;color:var(--tx3);font-family:var(--fn);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px 4px;" id="nav-settings-btn" onclick="toggleSettings()">
-    <svg width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    הגדרות
-  </button>
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-menu" onclick="toggleMainMenu()"><span class="nav-icon">☰</span>תפריט</button>
+  <button class="nav-fab" id="nav-add" onclick="openAddIncomeModal()" title="הוספת הכנסה">＋</button>
+  <button class="nav-item" id="nav-settings-btn" onclick="toggleSettings()"><span class="nav-icon">⚙️</span>הגדרות</button>
 </nav>
 
-<!-- MAIN MENU PANEL (grid style like ev-tracker) -->
-<div class="more-overlay" id="menu-overlay" onclick="closeMainMenu()" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:390;display:none;" id="menu-overlay"></div>
-<div id="main-menu-panel" style="position:fixed;bottom:var(--bnav-h);left:0;right:0;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:480px;margin:0 auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:400;display:none;animation:su .25s ease;max-height:80vh;overflow-y:auto;">
-  <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);margin-bottom:12px;text-align:center;">תפריט ראשי</div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-dashboard" onclick="showPage('dashboard');closeMainMenu()"><span style="font-size:1.5rem">📊</span>דשבורד</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-income" onclick="showPage('income');closeMainMenu()"><span style="font-size:1.5rem">💰</span>הכנסות</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-tithe" onclick="showPage('tithe');closeMainMenu()"><span style="font-size:1.5rem">✡️</span>מעשרות</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-loans" onclick="showPage('loans');closeMainMenu()"><span style="font-size:1.5rem">📋</span>הלוואות</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-redemption" onclick="showPage('redemption');closeMainMenu()"><span style="font-size:1.5rem">🔓</span>פדיון</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-donations" onclick="showPage('donations');closeMainMenu()"><span style="font-size:1.5rem">🕍</span>הנצחה</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-misc" onclick="showPage('misc');closeMainMenu()"><span style="font-size:1.5rem">💸</span>תוספות</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-persons" onclick="showPage('persons');closeMainMenu()"><span style="font-size:1.5rem">👥</span>אנשים</button>
-    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-backup" onclick="showPage('backup');closeMainMenu()"><span style="font-size:1.5rem">☁️</span>גיבויים</button>
-  </div>
+<!-- MAIN MENU PANEL -->
+<div class="more-overlay" id="menu-overlay" onclick="closeMainMenu()"></div>
+<div class="main-menu-panel" id="main-menu-panel">
+  <div class="main-menu-title">תפריט</div>
+  <div class="main-menu-item active" id="menuitem-dashboard" onclick="showPage('dashboard');closeMainMenu()"><span>📊</span>דשבורד</div>
+  <div class="main-menu-item" id="menuitem-income" onclick="showPage('income');closeMainMenu()"><span>💰</span>הכנסות</div>
+  <div class="main-menu-item" id="menuitem-tithe" onclick="showPage('tithe');closeMainMenu()"><span>✡️</span>מעשרות</div>
+  <div class="main-menu-item" id="menuitem-loans" onclick="showPage('loans');closeMainMenu()"><span>📋</span>הלוואות</div>
+  <div class="main-menu-item" id="menuitem-redemption" onclick="showPage('redemption');closeMainMenu()"><span>🔓</span>פדיון</div>
+  <div class="main-menu-item" id="menuitem-donations" onclick="showPage('donations');closeMainMenu()"><span>🕍</span>הנצחה</div>
+  <div class="main-menu-item" id="menuitem-misc" onclick="showPage('misc');closeMainMenu()"><span>💸</span>תוספות</div>
+  <div class="main-menu-item" id="menuitem-persons" onclick="showPage('persons');closeMainMenu()"><span>👥</span>אנשים</div>
 </div>
 
 <main>
@@ -877,60 +887,6 @@ tr:active td{background:rgba(255,255,255,0.03);}
   </div>
   <div class="persons-list" id="persons-list"></div>
 </div>
-
-<!-- BACKUP PAGE -->
-<div class="page" id="page-backup">
-  <div class="section-header" style="margin-bottom:14px;">
-    <div style="font-size:1.05rem;font-weight:800;color:#e8c97a;display:flex;align-items:center;gap:8px;">
-      <span style="width:3px;height:14px;background:#e8c97a;border-radius:2px;display:inline-block;"></span>
-      ☁️ גיבויים וניהול נתונים
-    </div>
-  </div>
-
-  <!-- Google Drive card -->
-  <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac2);border-radius:var(--r) var(--r) 0 0;"></div>
-    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:12px;display:flex;align-items:center;gap:7px;">
-      <span style="width:3px;height:11px;background:var(--ac2);border-radius:2px;flex-shrink:0;"></span>
-      חיבור Google Drive
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <span id="gd-status-backup" style="font-size:.82rem;color:var(--tx2);">☁️ לא מחובר</span>
-      <span id="gd-user-backup" style="font-size:.75rem;color:var(--ac);display:none;"></span>
-    </div>
-    <button id="gd-btn-backup" onclick="gdLogin()" style="width:100%;padding:12px;border-radius:var(--rs);background:rgba(59,130,246,.1);color:var(--ac2);border:1.5px solid rgba(59,130,246,.4);font-family:var(--fn);font-size:.88rem;font-weight:700;cursor:pointer;">☁️ חיבור Google Drive</button>
-  </div>
-
-  <!-- PWA install card -->
-  <div id="backup-install-card" style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;display:none;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:#e8c97a;border-radius:var(--r) var(--r) 0 0;"></div>
-    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:12px;">📲 התקנה כאפליקציה</div>
-    <p style="font-size:.82rem;color:var(--tx2);margin-bottom:12px;line-height:1.5;">ניתן להתקין את האפליקציה על מסך הבית לגישה מהירה ללא דפדפן.</p>
-    <button id="pwa-install-btn" onclick="pwaInstall()" style="width:100%;padding:12px;border-radius:var(--rs);background:rgba(201,168,76,.1);color:#e8c97a;border:1.5px solid rgba(201,168,76,.4);font-family:var(--fn);font-size:.88rem;font-weight:700;cursor:pointer;">📲 התקן כאפליקציה</button>
-  </div>
-
-  <!-- Export/Import card -->
-  <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac);border-radius:var(--r) var(--r) 0 0;"></div>
-    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:14px;display:flex;align-items:center;gap:7px;">
-      <span style="width:3px;height:11px;background:var(--ac);border-radius:2px;flex-shrink:0;"></span>
-      ייצוא / ייבוא נתונים
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <button onclick="exportData()" style="padding:12px 8px;border-radius:var(--rs);background:rgba(0,200,150,.08);color:var(--ac);border:1.5px solid rgba(0,200,150,.35);font-family:var(--fn);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.3rem;">📤</span>ייצוא JSON</button>
-      <button onclick="document.getElementById('import-file-backup').click()" style="padding:12px 8px;border-radius:var(--rs);background:rgba(59,130,246,.08);color:var(--ac2);border:1.5px solid rgba(59,130,246,.35);font-family:var(--fn);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.3rem;">📥</span>ייבוא JSON</button>
-    </div>
-    <input type="file" id="import-file-backup" accept=".json" style="display:none" onchange="importData(event)">
-  </div>
-
-  <!-- Danger zone -->
-  <div style="background:var(--sf);border:1px solid rgba(239,68,68,.3);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--er);border-radius:var(--r) var(--r) 0 0;"></div>
-    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--er);margin-bottom:12px;">⚠️ אזור מסוכן</div>
-    <button onclick="hardReset()" style="width:100%;padding:12px;border-radius:var(--rs);background:rgba(239,68,68,.08);color:var(--er);border:1.5px solid rgba(239,68,68,.35);font-family:var(--fn);font-size:.88rem;font-weight:700;cursor:pointer;">🗑️ מחיקת כל הנתונים</button>
-  </div>
-</div>
-
 </main>
 
 <!-- ADD INCOME QUICK MODAL -->
@@ -1370,16 +1326,15 @@ function setNav(id) {
 function toggleMainMenu() {
   const panel = document.getElementById('main-menu-panel');
   const overlay = document.getElementById('menu-overlay');
-  const isOpen = panel.style.display === 'block';
-  panel.style.display = isOpen ? 'none' : 'block';
-  overlay.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) closeSettings();
+  const open = panel.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  document.getElementById('nav-menu').classList.toggle('active', open);
+  if (open) closeSettings();
 }
 function closeMainMenu() {
-  const panel = document.getElementById('main-menu-panel');
-  const overlay = document.getElementById('menu-overlay');
-  if (panel) panel.style.display = 'none';
-  if (overlay) overlay.style.display = 'none';
+  document.getElementById('main-menu-panel').classList.remove('open');
+  document.getElementById('menu-overlay').classList.remove('open');
+  document.getElementById('nav-menu').classList.remove('active');
 }
 function closeSettings() {
   const d=document.getElementById('settings-drawer');
@@ -2766,16 +2721,8 @@ let gdToken = null, gdTokenExpiry = 0, gdUserId = null, gdFileId = null, gdSynci
 
 function gdUserKey(k) { return gdUserId ? `ks_${gdUserId}_${k}` : null; }
 function gdSetStatus(txt, color) {
-  ['gd-status','gd-status-backup'].forEach(id => {
-    const s = document.getElementById(id);
-    if (s) { s.textContent = txt; s.style.color = color || 'var(--tx2)'; }
-  });
-  const ub = document.getElementById('gd-user-backup');
-  const u = document.getElementById('gd-user');
-  if (ub && u) { ub.textContent = u.textContent; ub.style.display = u.style.display; }
-  // update btn
-  const btn = document.getElementById('gd-btn-backup');
-  if (btn) btn.textContent = gdToken ? '🔗 מחובר — לחץ לניתוק' : '☁️ חיבור Google Drive';
+  const s = document.getElementById('gd-status');
+  if (s) { s.textContent = txt; s.style.color = color || 'var(--muted)'; }
 }
 function gdIsTokenValid() { return gdToken && Date.now() < gdTokenExpiry - 60000; }
 
@@ -2929,13 +2876,13 @@ let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  const card = document.getElementById('backup-install-card');
-  if (card) card.style.display = 'block';
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = '';
 });
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
-  const card = document.getElementById('backup-install-card');
-  if (card) card.style.display = 'none';
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.style.display = 'none';
 });
 function pwaInstall() {
   if (!deferredInstallPrompt) return;
@@ -2983,5 +2930,148 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<!-- ══ DIAGNOSTICS PANEL ══ -->
+<div id="diag-fab" onclick="diagToggle()" style="position:fixed;bottom:80px;left:12px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e05260;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.5);border:none;font-weight:700;">🔍</div>
+<div id="diag-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#0a0e14;border-top:2px solid #e05260;max-height:65vh;overflow-y:auto;padding:12px;font-family:monospace;font-size:11px;color:#e2eaf4;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <b style="color:#e05260;font-size:13px;">🔍 דיאגנוסטיקה</b>
+    <div style="display:flex;gap:6px;">
+      <button onclick="diagRefresh()" style="background:#1c2330;border:1px solid #2a3547;color:#00c896;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">🔄 רענן</button>
+      <button onclick="diagCopy()" style="background:#1c2330;border:1px solid #2a3547;color:#f59e0b;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">📋 העתק</button>
+      <button onclick="diagToggle()" style="background:#1c2330;border:1px solid #2a3547;color:#8899b0;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">✕</button>
+    </div>
+  </div>
+  <pre id="diag-output" style="margin:0;white-space:pre-wrap;line-height:1.6;"></pre>
+</div>
+
+<script>
+// ══ DIAGNOSTICS ══
+let diagLog = [];
+let _deferredForDiag = null;
+
+function diagEntry(label, value, ok) {
+  const icon = ok === true ? '✅' : ok === false ? '❌' : '⚪';
+  return `${icon} ${label}: ${value}`;
+}
+
+async function diagRefresh() {
+  diagLog = [];
+  const out = document.getElementById('diag-output');
+  if (!out) return;
+
+  // — Origin & URL
+  diagLog.push('── כתובת ──');
+  diagLog.push(diagEntry('Origin', location.origin, null));
+  diagLog.push(diagEntry('Pathname', location.pathname, null));
+  diagLog.push(diagEntry('Protocol', location.protocol, location.protocol === 'https:'));
+
+  // — PWA / manifest
+  diagLog.push('');
+  diagLog.push('── PWA ──');
+  const manifestLink = document.getElementById('pwaManifest') || document.querySelector('link[rel=manifest]');
+  diagLog.push(diagEntry('manifest link', manifestLink ? (manifestLink.href.substring(0,60)+'...') : 'לא נמצא', !!manifestLink));
+  diagLog.push(diagEntry('beforeinstallprompt נקלט', _deferredForDiag ? 'כן' : 'לא', !!_deferredForDiag));
+  diagLog.push(diagEntry('deferredInstallPrompt (גלובלי)', typeof deferredInstallPrompt !== 'undefined' && deferredInstallPrompt ? 'יש' : 'אין', typeof deferredInstallPrompt !== 'undefined' && deferredInstallPrompt));
+
+  // — Service Worker
+  diagLog.push('');
+  diagLog.push('── Service Worker ──');
+  if ('serviceWorker' in navigator) {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      diagLog.push(diagEntry('SW נתמך', 'כן', true));
+      diagLog.push(diagEntry('SW רשומים', regs.length, regs.length > 0));
+      regs.forEach((r,i) => diagLog.push(`   SW[${i}]: ${r.scope} (${r.active ? 'פעיל' : 'לא פעיל'})`));
+    } catch(e) { diagLog.push(diagEntry('SW שגיאה', e.message, false)); }
+  } else {
+    diagLog.push(diagEntry('SW נתמך', 'לא', false));
+  }
+
+  // — Manifest fetch test
+  diagLog.push('');
+  diagLog.push('── בדיקת Manifest ──');
+  try {
+    if (manifestLink && manifestLink.href) {
+      const r = await fetch(manifestLink.href);
+      const txt = await r.text();
+      const j = JSON.parse(txt);
+      diagLog.push(diagEntry('manifest fetch', `${r.status} OK`, r.ok));
+      diagLog.push(diagEntry('name', j.name || '—', !!j.name));
+      diagLog.push(diagEntry('start_url', j.start_url || '—', !!j.start_url));
+      diagLog.push(diagEntry('display', j.display || '—', j.display === 'standalone'));
+      diagLog.push(diagEntry('icons', j.icons ? j.icons.length + ' אייקונים' : '0', j.icons && j.icons.length > 0));
+      diagLog.push(diagEntry('theme_color', j.theme_color || '—', !!j.theme_color));
+      // Check start_url matches origin
+      const swUrl = new URL(j.start_url, location.href);
+      diagLog.push(diagEntry('start_url origin מתאים', swUrl.origin === location.origin ? 'כן' : `לא! ${swUrl.origin} vs ${location.origin}`, swUrl.origin === location.origin));
+    } else {
+      diagLog.push(diagEntry('manifest', 'אין href', false));
+    }
+  } catch(e) { diagLog.push(diagEntry('manifest שגיאה', e.message, false)); }
+
+  // — Google OAuth
+  diagLog.push('');
+  diagLog.push('── Google OAuth ──');
+  diagLog.push(diagEntry('window.google', typeof window.google !== 'undefined' ? 'נטען' : 'לא נטען', typeof window.google !== 'undefined'));
+  diagLog.push(diagEntry('google.accounts', typeof window.google !== 'undefined' && window.google.accounts ? 'נטען' : 'לא נטען', typeof window.google !== 'undefined' && window.google && window.google.accounts));
+  const CLIENT_ID = typeof GD_CLIENT_ID !== 'undefined' ? GD_CLIENT_ID : '—';
+  diagLog.push(diagEntry('Client ID', CLIENT_ID.substring(0,30)+'...', CLIENT_ID !== '—'));
+
+  // — HTTPS / Security
+  diagLog.push('');
+  diagLog.push('── אבטחה ──');
+  diagLog.push(diagEntry('HTTPS', location.protocol === 'https:' ? 'כן' : 'לא', location.protocol === 'https:'));
+  diagLog.push(diagEntry('isSecureContext', isSecureContext ? 'כן' : 'לא', isSecureContext));
+
+  // — localStorage
+  diagLog.push('');
+  diagLog.push('── localStorage ──');
+  try {
+    localStorage.setItem('__diag_test', '1');
+    localStorage.removeItem('__diag_test');
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('ks_'));
+    diagLog.push(diagEntry('localStorage', 'עובד', true));
+    diagLog.push(diagEntry('מפתחות ks_*', keys.length, null));
+  } catch(e) { diagLog.push(diagEntry('localStorage', e.message, false)); }
+
+  // — Display mode
+  diagLog.push('');
+  diagLog.push('── מצב תצוגה ──');
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  diagLog.push(diagEntry('Standalone (מותקן)', isStandalone ? 'כן' : 'לא', null));
+  diagLog.push(diagEntry('User Agent', navigator.userAgent.substring(0,60), null));
+
+  out.textContent = diagLog.join('\n');
+}
+
+function diagToggle() {
+  const p = document.getElementById('diag-panel');
+  if (!p) return;
+  if (p.style.display === 'none') {
+    p.style.display = 'block';
+    diagRefresh();
+  } else {
+    p.style.display = 'none';
+  }
+}
+
+function diagCopy() {
+  navigator.clipboard.writeText(diagLog.join('\n')).then(() => {
+    const btn = document.querySelector('#diag-panel button:nth-child(2)');
+    if (btn) { btn.textContent = '✅ הועתק'; setTimeout(() => btn.textContent = '📋 העתק', 1500); }
+  });
+}
+
+// Capture beforeinstallprompt early
+window.addEventListener('beforeinstallprompt', (e) => {
+  _deferredForDiag = e;
+  // log to diag output if open
+  const out = document.getElementById('diag-output');
+  if (out && document.getElementById('diag-panel').style.display !== 'none') {
+    diagRefresh();
+  }
+}, true); // capture phase so it runs before other listeners
+</script>
+
 </body>
 </html>
