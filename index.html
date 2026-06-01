@@ -13,82 +13,68 @@
 <meta http-equiv="Cross-Origin-Opener-Policy" content="unsafe-none">
 <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
 <script src="https://accounts.google.com/gsi/client" async></script>
+<link rel="manifest" id="pwaManifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="קרן סיוע">
+<meta name="theme-color" content="#c9a84c">
 <script>
-// PWA manifest inline — no sw.js file needed for basic PWA
 (function(){
-  const manifest = {
-    name: 'קרן סיוע',
-    short_name: 'קרן סיוע',
-    description: 'מערכת ניהול קרן סיוע',
-    start_url: location.pathname,
-    display: 'standalone',
-    background_color: '#0a0e14',
-    theme_color: '#c9a84c',
-    dir: 'rtl',
-    lang: 'he',
-    icons: [
-      { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-      { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = url;
-  document.head.appendChild(link);
+  const manifest = JSON.stringify({
+    name:'קרן סיוע',short_name:'קרן סיוע',description:'מערכת ניהול קרן סיוע',
+    start_url:location.pathname,display:'standalone',background_color:'#0a0e14',
+    theme_color:'#c9a84c',dir:'rtl',lang:'he',orientation:'portrait',
+    icons:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png','purpose':'any maskable'}]
+  });
+  const blob=new Blob([manifest],{type:'application/json'});
+  document.getElementById('pwaManifest').href=URL.createObjectURL(blob);
 })();
 </script>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&family=Frank+Ruhl+Libre:wght@300;400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg: #0a0e14;
-  --surface: #131820;
-  --surface2: #1c2330;
-  --surface3: #242d3b;
-  --border: #2a3547;
-  --gold: #c9a84c;
-  --gold2: #e8c97a;
-  --teal: #00c896;
-  --red: #ef4444;
-  --green: #22c55e;
-  --blue: #3b82f6;
-  --purple: #a855f7;
-  --text: #e2eaf4;
-  --muted: #8899b0;
-  --muted2: #5c6e84;
-  --radius: 14px;
-  --radius-sm: 9px;
-  --nav-h: 64px;
-  --header-h: 56px;
-  --fn: 'Heebo', sans-serif;
+:root{
+  --bg:#0a0e14;--sf:#131820;--sf2:#1c2330;--sf3:#242d3b;
+  --bd:#2a3547;--ac:#00c896;--ac2:#3b82f6;--ac3:#f59e0b;
+  --ac4:#ec4899;--tx:#e2eaf4;--tx2:#8899b0;--tx3:#5c6e84;
+  --er:#ef4444;--ok:#22c55e;--r:14px;--rs:9px;--fn:'Heebo',sans-serif;
+  --bnav-h:64px;
+  /* legacy aliases for existing code */
+  --surface:var(--sf);--surface2:var(--sf2);--border:var(--bd);
+  --text:var(--tx);--muted:var(--tx2);--muted2:var(--tx3);
+  --teal:var(--ac);--blue:var(--ac2);--gold:#c9a84c;--gold2:#e8c97a;
+  --red:var(--er);--green:var(--ok);--purple:#a855f7;
+  --radius:var(--r);--nav-h:var(--bnav-h);--header-h:56px;
 }
-body.light-mode {
-  --bg:#f0f4f8; --surface:#ffffff; --surface2:#e8eef5; --surface3:#dde5ee; --border:#c8d5e3;
-  --text:#1a2332; --muted:#4a5e74; --muted2:#7a92a8; --gold2:#8a6010;
-  --teal:#00a07a; --red:#dc2626; --green:#16a34a; --blue:#2563eb; --purple:#7c3aed;
+body.light{
+  --bg:#f0f4f8;--sf:#ffffff;--sf2:#e8eef5;--sf3:#dde5ee;
+  --bd:#c8d5e3;--tx:#1a2332;--tx2:#4a5e74;--tx3:#7a92a8;
+  --er:#dc2626;--ok:#16a34a;
 }
+body.light-mode{--bg:#f0f4f8;--sf:#ffffff;--sf2:#e8eef5;--sf3:#dde5ee;--bd:#c8d5e3;--tx:#1a2332;--tx2:#4a5e74;--tx3:#7a92a8;--er:#dc2626;--ok:#16a34a;}
 body.light-mode { background:var(--bg) !important; color:var(--text) !important; }
-body.light-mode header { background:linear-gradient(160deg,#dde5ee,#e8eef5) !important; border-bottom-color:var(--border) !important; }
+body.light-mode header { background:#fff !important; border-bottom-color:var(--border) !important; }
 body.light-mode main { background:var(--bg) !important; }
 body.light-mode .kpi,body.light-mode .chart-box,body.light-mode .person-card,
 body.light-mode .person-item,body.light-mode .table-wrap,body.light-mode .tithe-card,
 body.light-mode .modal,body.light-mode .bottom-nav,body.light-mode .main-menu-panel,
-body.light-mode .settings-drawer,body.light-mode .summary-bar,body.light-mode .backup-card {
+body.light-mode .settings-drawer,body.light-mode .summary-bar {
   background:var(--surface) !important; border-color:var(--border) !important; }
 body.light-mode th { background:var(--surface2) !important; color:var(--muted) !important; }
 body.light-mode td { color:var(--text) !important; background:var(--surface) !important; }
-body.light-mode tr:nth-child(even) td { background:var(--surface2) !important; }
-body.light-mode .kpi-label { color:var(--muted2) !important; }
+body.light-mode tr:nth-child(even) td { background:#f5f7fc !important; }
+body.light-mode .kpi-label,.light-mode .chart-title,.light-mode .tithe-card-title,
+body.light-mode .section-title { color:var(--muted) !important; }
 body.light-mode .section-title { color:var(--gold2) !important; }
-body.light-mode .modal-title { color:var(--gold2) !important; }
-body.light-mode .logo span { -webkit-text-fill-color:var(--gold2); }
-body.light-mode .nav-item.active { color:var(--teal) !important; }
+body.light-mode .modal-title,.light-mode .logo { color:var(--gold2) !important; }
+body.light-mode .logo small,.light-mode .nav-item,.light-mode .chart-title,
+body.light-mode .kpi-label,.light-mode .person-row .label,.light-mode .tithe-card-title,
+body.light-mode .main-menu-title { color:var(--muted) !important; }
+body.light-mode .nav-item.active,.light-mode .main-menu-item.active { color:var(--gold2) !important; }
+body.light-mode .main-menu-item { color:var(--text) !important; }
 body.light-mode .sub-tab { color:var(--muted) !important; border-color:var(--border) !important; background:var(--surface2) !important; }
-body.light-mode .sub-tab.active { background:rgba(0,200,150,0.12) !important; color:var(--teal) !important; border-color:var(--teal) !important; }
+body.light-mode .sub-tab.active { background:var(--gold) !important; color:#111 !important; }
 body.light-mode .form-group input,body.light-mode .form-group select,body.light-mode .form-group textarea {
   background:var(--surface2) !important; color:var(--text) !important; border-color:var(--border) !important; }
 body.light-mode .btn-secondary { background:var(--surface2) !important; color:var(--text) !important; border-color:var(--border) !important; }
@@ -97,15 +83,15 @@ html, body { height: 100%; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--fn);
+  font-family: 'Heebo', sans-serif;
   overflow-x: hidden;
   font-size: 15px;
 }
 
-/* ---- Header ---- */
+/* ---- Header (ev-tracker style) ---- */
 header {
   background: linear-gradient(160deg,#0d1522,#131820);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--bd);
   padding: 0 16px;
   display: flex;
   align-items: center;
@@ -116,19 +102,19 @@ header {
   z-index: 200;
 }
 .logo { font-family: var(--fn); font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px; }
-.logo span { background: linear-gradient(90deg,var(--gold),var(--gold2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.logo small { color: var(--muted); font-size: 0.65rem; font-weight: 400; display: block; line-height: 1; margin-top: 1px; }
+.logo span { background: linear-gradient(90deg,#c9a84c,#e8c97a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.logo small { color: var(--tx3); font-size: 0.65rem; font-weight: 400; display: block; line-height: 1; margin-top:1px; font-family: var(--fn); }
 .settings-btn {
   width: 38px; height: 38px;
-  border-radius: var(--radius-sm);
-  background: var(--surface2);
+  border-radius: 10px;
+  background: var(--surface);
   border: 1px solid var(--border);
   color: var(--muted);
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 17px;
+  cursor: pointer; font-size: 18px;
   transition: all 0.15s;
 }
-.settings-btn:hover, .settings-btn.open { color: var(--gold2); border-color: var(--gold); background: rgba(201,168,76,0.1); }
+.settings-btn:hover, .settings-btn.open { color: var(--gold2); border-color: var(--gold); }
 
 /* ---- Settings Drawer ---- */
 .settings-drawer {
@@ -169,9 +155,8 @@ header {
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   z-index: 200;
-  padding: 0 8px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .nav-item {
@@ -182,39 +167,35 @@ header {
   justify-content: center;
   gap: 3px;
   cursor: pointer;
-  color: var(--muted2);
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: color 0.18s;
-  padding: 8px 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  transition: color 0.15s;
+  padding: 8px 2px;
   border: none; background: none;
-  font-family: var(--fn);
+  position: relative;
 }
-.nav-item:active { opacity: 0.7; }
-.nav-item .nav-icon { font-size: 22px; line-height: 1; }
-.nav-item.active { color: var(--teal); }
+.nav-item .nav-icon { font-size: 20px; line-height: 1; }
+.nav-item.active { color: var(--gold2); }
+/* nav active handled by color only */
 /* FAB add button */
 .nav-fab {
-  flex: 0 0 60px;
-  width: 60px; height: 60px;
+  width: 56px; height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg,var(--gold),#a07020);
-  color: #0a0e14;
+  background: var(--gold);
+  color: #111;
   font-size: 28px;
   font-weight: 700;
   border: none;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 18px rgba(201,168,76,0.45);
+  box-shadow: 0 4px 16px rgba(201,168,76,0.5);
   margin-bottom: 12px;
-  transform: translateY(-6px);
   flex-shrink: 0;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, background 0.15s;
   line-height: 1;
 }
-.nav-fab:active { transform: translateY(-4px) scale(0.95); box-shadow: 0 2px 10px rgba(201,168,76,0.3); }
+.nav-fab:active { transform: scale(0.93); background: var(--gold2); }
 /* Main menu panel */
 .main-menu-panel {
   position: fixed;
@@ -226,14 +207,14 @@ header {
   transform: translateY(100%);
   transition: transform 0.25s ease;
   box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
-  border-radius: 16px 16px 0 0;
+  border-radius: 20px 20px 0 0;
   padding: 8px 0 8px;
   max-height: 70vh;
   overflow-y: auto;
 }
 .main-menu-panel.open { transform: translateY(0); }
 .main-menu-title {
-  font-size: 0.68rem; font-weight: 700; color: var(--muted2);
+  font-size: 11px; font-weight: 700; color: var(--muted);
   text-transform: uppercase; letter-spacing: 1px;
   padding: 4px 20px 10px;
   border-bottom: 1px solid var(--border);
@@ -248,8 +229,8 @@ header {
   transition: background 0.12s;
 }
 .main-menu-item span { font-size: 20px; }
-.main-menu-item:active { background: rgba(255,255,255,0.04); }
-.main-menu-item.active { color: var(--teal); background: rgba(0,200,150,0.06); }
+.main-menu-item:active { background: rgba(255,255,255,0.05); }
+.main-menu-item.active { color: var(--gold2); background: rgba(201,168,76,0.07); }
 /* Settings drawer triggered from bottom */
 #nav-settings-btn.active { color: var(--gold2); }
 /* more button */
@@ -302,32 +283,32 @@ main {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 13px 12px;
+  padding: 14px 12px 12px;
   position: relative;
   overflow: hidden;
 }
-.kpi::before {
+.kpi::after {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  border-radius: var(--radius) var(--radius) 0 0;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 0 0 var(--radius) var(--radius);
 }
-.kpi.gold::before { background: var(--gold); }
-.kpi.teal::before { background: var(--teal); }
-.kpi.red::before { background: var(--red); }
-.kpi.green::before { background: var(--green); }
-.kpi.blue::before { background: var(--blue); }
-.kpi.purple::before { background: var(--purple); }
-.kpi-label { font-size: 0.6rem; color: var(--muted2); margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; }
-.kpi-value { font-size: 1.22rem; font-weight: 900; line-height: 1.1; }
+.kpi.gold::after { background: var(--gold); }
+.kpi.teal::after { background: var(--teal); }
+.kpi.red::after { background: var(--red); }
+.kpi.green::after { background: var(--green); }
+.kpi.blue::after { background: var(--blue); }
+.kpi.purple::after { background: var(--purple); }
+.kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+.kpi-value { font-size: 20px; font-weight: 800; line-height: 1; }
 .kpi.gold .kpi-value { color: var(--gold2); }
 .kpi.teal .kpi-value { color: var(--teal); }
 .kpi.red .kpi-value { color: var(--red); }
 .kpi.green .kpi-value { color: var(--green); }
 .kpi.blue .kpi-value { color: var(--blue); }
 .kpi.purple .kpi-value { color: var(--purple); }
-.kpi-sub { font-size: 0.6rem; color: var(--muted); margin-top: 3px; }
+.kpi-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
 /* ---- Charts ---- */
 .charts-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
@@ -360,23 +341,22 @@ main {
 
 /* ---- Section layout ---- */
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.section-title { font-family: var(--fn); font-size: 1.05rem; font-weight: 800; color: var(--gold2); display: flex; align-items: center; gap: 8px; }
-.section-title::before { content: ''; width: 3px; height: 14px; background: var(--gold2); border-radius: 2px; flex-shrink: 0; }
+.section-title { font-family: 'Frank Ruhl Libre', serif; font-size: 18px; font-weight: 700; color: var(--gold2); }
 
 /* ---- Buttons ---- */
 .btn {
   padding: 10px 18px;
-  border-radius: var(--radius-sm);
-  font-family: var(--fn);
+  border-radius: 10px;
+  font-family: 'Heebo', sans-serif;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   border: none;
   transition: all 0.15s;
   display: inline-flex; align-items: center; gap: 5px;
 }
-.btn-primary { background: linear-gradient(135deg,var(--gold),#a07020); color: #0a0e14; }
-.btn-primary:active { opacity: 0.88; transform: scale(0.97); }
+.btn-primary { background: var(--gold); color: #111; }
+.btn-primary:active { background: var(--gold2); transform: scale(0.97); }
 .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); font-size: 12px; padding: 5px 10px; border-radius: 7px; }
 .btn-danger:active { background: var(--red); color: #fff; }
 .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
@@ -385,12 +365,12 @@ main {
 .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table{width:100%;border-collapse:collapse;}
-th{background:var(--surface2);color:var(--muted);font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:6px 8px;text-align:right;white-space:nowrap;}
-td{padding:6px 8px;font-size:12px;border-top:1px solid rgba(42,53,71,0.4);}
-tr:active td{background:rgba(0,200,150,0.04);}
+th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:5px 6px;text-align:right;white-space:nowrap;}
+td{padding:5px 6px;font-size:12px;border-top:1px solid var(--border);}
+tr:active td{background:rgba(255,255,255,0.03);}
 .act-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:13px;border:none;cursor:pointer;background:transparent;margin-left:2px;vertical-align:middle;}
 .act-edit{color:var(--teal);border:1px solid var(--teal);}
-.act-edit:active{background:var(--teal);color:#0a0e14;}
+.act-edit:active{background:var(--teal);color:#111;}
 .act-del{color:var(--red);border:1px solid var(--red);}
 .act-del:active{background:var(--red);color:#fff;}
 
@@ -436,7 +416,7 @@ tr:active td{background:rgba(0,200,150,0.04);}
 .modal {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px 16px 0 0;
+  border-radius: 20px 20px 0 0;
   padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   width: 100%;
   max-height: 92vh;
@@ -445,24 +425,23 @@ tr:active td{background:rgba(0,200,150,0.04);}
 }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
-.modal-title { font-family: var(--fn); font-size: 1rem; font-weight: 800; color: var(--gold2); margin-bottom: 18px; }
+.modal-title { font-family: 'Frank Ruhl Libre', serif; font-size: 19px; font-weight: 700; color: var(--gold2); margin-bottom: 18px; }
 .form-group { margin-bottom: 14px; }
-.form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+.form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
 .form-group input, .form-group select, .form-group textarea {
   width: 100%;
   background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-radius: 10px;
   color: var(--text);
-  font-family: var(--fn);
-  font-size: 1.05rem;
-  font-weight: 500;
-  padding: 12px 13px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 16px;
+  padding: 11px 13px;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.15s;
   -webkit-appearance: none;
 }
-.form-group input:focus, .form-group select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
+.form-group input:focus, .form-group select:focus { border-color: var(--gold); }
 .form-group input[type=checkbox] {
   width: 20px; height: 20px;
   min-width: 20px;
@@ -482,17 +461,16 @@ tr:active td{background:rgba(0,200,150,0.04);}
 .sub-tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
 .sub-tabs::-webkit-scrollbar { display: none; }
 .sub-tab {
-  padding: 7px 16px;
+  padding: 7px 15px;
   border-radius: 20px;
   cursor: pointer;
-  font-size: 0.82rem; font-weight: 600;
+  font-size: 13px; font-weight: 500;
   color: var(--muted);
   border: 1px solid var(--border);
-  background: transparent;
   transition: all 0.15s;
   white-space: nowrap;
 }
-.sub-tab.active { background: rgba(0,200,150,0.12); color: var(--teal); border-color: var(--teal); }
+.sub-tab.active { background: var(--gold); color: #111; border-color: var(--gold); }
 
 /* ---- Summary bar ---- */
 .summary-bar {
@@ -622,61 +600,9 @@ tr:active td{background:rgba(0,200,150,0.04);}
   outline: none;
   font-family: 'Heebo', sans-serif;
 }
-/* ---- Backup card ---- */
-.backup-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 12px;
-  position: relative;
-  overflow: hidden;
-}
-.backup-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--blue);
-  border-radius: var(--radius) var(--radius) 0 0;
-}
-.backup-card-title {
-  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.8px; color: var(--muted); margin-bottom: 12px;
-  display: flex; align-items: center; gap: 7px;
-}
-.backup-card-title::before { content: ''; width: 3px; height: 11px; background: var(--blue); border-radius: 2px; flex-shrink: 0; }
-.backup-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.backup-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 10px 8px; border-radius: var(--radius-sm);
-  font-family: var(--fn); font-size: 0.72rem; font-weight: 700;
-  cursor: pointer; border: 1.5px solid; transition: all 0.15s;
-  background: transparent;
-}
-.backup-btn:active { opacity: 0.75; transform: scale(0.97); }
-.backup-btn .bb-icon { font-size: 1.3rem; }
-.backup-btn.bb-gd { color: var(--blue); border-color: rgba(59,130,246,0.45); }
-.backup-btn.bb-gd.connected { color: var(--teal); border-color: rgba(0,200,150,0.45); }
-.backup-btn.bb-export { color: var(--teal); border-color: rgba(0,200,150,0.4); }
-.backup-btn.bb-import { color: var(--blue); border-color: rgba(59,130,246,0.4); }
-.backup-btn.bb-install { color: var(--gold2); border-color: rgba(201,168,76,0.4); }
-.backup-btn.bb-reset { color: var(--red); border-color: rgba(239,68,68,0.35); }
-.backup-status { font-size: 0.68rem; color: var(--muted); margin-top: 8px; text-align: center; }
-
-/* ---- toast ---- */
-.toast {
-  position: fixed; bottom: calc(var(--nav-h) + 10px); left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--surface); border: 1px solid var(--green);
-  border-radius: var(--radius); color: var(--green);
-  font-size: 0.82rem; font-weight: 700; padding: 11px 22px;
-  z-index: 999; transition: transform 0.28s ease; white-space: nowrap;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast.e { border-color: var(--red); color: var(--red); }
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 </style>
-</head>
 <body>
 
 <header>
@@ -745,26 +671,36 @@ tr:active td{background:rgba(0,200,150,0.04);}
   <div class="desktop-tab" onclick="showPage('donations',this)">🕍 הנצחה</div>
   <div class="desktop-tab" onclick="showPage('misc',this)">💸 תוספות</div>
   <div class="desktop-tab" onclick="showPage('persons',this)">👥 אנשים</div>
+  <div class="desktop-tab" onclick="showPage('backup',this)">☁️ גיבויים</div>
 </div>
 
-<nav class="bottom-nav">
-  <button class="nav-item active" id="nav-menu" onclick="toggleMainMenu()"><span class="nav-icon">☰</span>תפריט</button>
-  <button class="nav-fab" id="nav-add" onclick="openAddIncomeModal()" title="הוספת הכנסה">＋</button>
-  <button class="nav-item" id="nav-settings-btn" onclick="toggleSettings()"><span class="nav-icon">⚙️</span>הגדרות</button>
+<nav class="bottom-nav" style="display:flex;align-items:center;justify-content:space-around;position:fixed;bottom:0;left:0;right:0;height:var(--bnav-h);background:var(--sf);border-top:1px solid var(--bd);z-index:250;padding:0 8px;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <button style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;background:none;border:none;cursor:pointer;color:var(--tx3);font-family:var(--fn);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px 4px;" id="nav-menu" onclick="toggleMainMenu()">
+    <svg width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    תפריט
+  </button>
+  <button style="flex:0 0 60px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#c9a84c,#a07020);color:#0a0e14;font-size:28px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(201,168,76,.45);margin-bottom:12px;transform:translateY(-6px);" id="nav-add" onclick="openAddIncomeModal()">＋</button>
+  <button style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;background:none;border:none;cursor:pointer;color:var(--tx3);font-family:var(--fn);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px 4px;" id="nav-settings-btn" onclick="toggleSettings()">
+    <svg width="22" height="22" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    הגדרות
+  </button>
 </nav>
 
-<!-- MAIN MENU PANEL -->
-<div class="more-overlay" id="menu-overlay" onclick="closeMainMenu()"></div>
-<div class="main-menu-panel" id="main-menu-panel">
-  <div class="main-menu-title">תפריט</div>
-  <div class="main-menu-item active" id="menuitem-dashboard" onclick="showPage('dashboard');closeMainMenu()"><span>📊</span>דשבורד</div>
-  <div class="main-menu-item" id="menuitem-income" onclick="showPage('income');closeMainMenu()"><span>💰</span>הכנסות</div>
-  <div class="main-menu-item" id="menuitem-tithe" onclick="showPage('tithe');closeMainMenu()"><span>✡️</span>מעשרות</div>
-  <div class="main-menu-item" id="menuitem-loans" onclick="showPage('loans');closeMainMenu()"><span>📋</span>הלוואות</div>
-  <div class="main-menu-item" id="menuitem-redemption" onclick="showPage('redemption');closeMainMenu()"><span>🔓</span>פדיון</div>
-  <div class="main-menu-item" id="menuitem-donations" onclick="showPage('donations');closeMainMenu()"><span>🕍</span>הנצחה</div>
-  <div class="main-menu-item" id="menuitem-misc" onclick="showPage('misc');closeMainMenu()"><span>💸</span>תוספות</div>
-  <div class="main-menu-item" id="menuitem-persons" onclick="showPage('persons');closeMainMenu()"><span>👥</span>אנשים</div>
+<!-- MAIN MENU PANEL (grid style like ev-tracker) -->
+<div class="more-overlay" id="menu-overlay" onclick="closeMainMenu()" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:390;display:none;" id="menu-overlay"></div>
+<div id="main-menu-panel" style="position:fixed;bottom:var(--bnav-h);left:0;right:0;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:480px;margin:0 auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:400;display:none;animation:su .25s ease;max-height:80vh;overflow-y:auto;">
+  <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);margin-bottom:12px;text-align:center;">תפריט ראשי</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-dashboard" onclick="showPage('dashboard');closeMainMenu()"><span style="font-size:1.5rem">📊</span>דשבורד</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-income" onclick="showPage('income');closeMainMenu()"><span style="font-size:1.5rem">💰</span>הכנסות</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-tithe" onclick="showPage('tithe');closeMainMenu()"><span style="font-size:1.5rem">✡️</span>מעשרות</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-loans" onclick="showPage('loans');closeMainMenu()"><span style="font-size:1.5rem">📋</span>הלוואות</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-redemption" onclick="showPage('redemption');closeMainMenu()"><span style="font-size:1.5rem">🔓</span>פדיון</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-donations" onclick="showPage('donations');closeMainMenu()"><span style="font-size:1.5rem">🕍</span>הנצחה</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-misc" onclick="showPage('misc');closeMainMenu()"><span style="font-size:1.5rem">💸</span>תוספות</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-persons" onclick="showPage('persons');closeMainMenu()"><span style="font-size:1.5rem">👥</span>אנשים</button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);width:100%;" id="menuitem-backup" onclick="showPage('backup');closeMainMenu()"><span style="font-size:1.5rem">☁️</span>גיבויים</button>
+  </div>
 </div>
 
 <main>
@@ -792,31 +728,6 @@ tr:active td{background:rgba(0,200,150,0.04);}
     </div>
   </div>
   <div class="persons-grid" id="persons-summary"></div>
-
-  <!-- כרטיס גיבויים -->
-  <div class="backup-card" id="backup-card">
-    <div class="backup-card-title">☁️ גיבויים וניהול נתונים</div>
-    <div class="backup-btns">
-      <button class="backup-btn bb-gd" id="backup-gd-btn" onclick="backupGdToggle()">
-        <span class="bb-icon">☁️</span>
-        <span id="backup-gd-label">Google Drive</span>
-      </button>
-      <button class="backup-btn bb-install" id="backup-install-btn" onclick="pwaInstall()" style="display:none">
-        <span class="bb-icon">📲</span>
-        <span>התקן אפליקציה</span>
-      </button>
-      <button class="backup-btn bb-export" onclick="exportData()">
-        <span class="bb-icon">📤</span>
-        <span>ייצוא JSON</span>
-      </button>
-      <button class="backup-btn bb-import" onclick="document.getElementById('import-file-card').click()">
-        <span class="bb-icon">📥</span>
-        <span>ייבוא JSON</span>
-      </button>
-    </div>
-    <div class="backup-status" id="backup-gd-status">☁️ לא מחובר ל-Google Drive</div>
-    <input type="file" id="import-file-card" accept=".json" style="display:none" onchange="importData(event)">
-  </div>
 </div>
 
 <!-- INCOME -->
@@ -966,6 +877,60 @@ tr:active td{background:rgba(0,200,150,0.04);}
   </div>
   <div class="persons-list" id="persons-list"></div>
 </div>
+
+<!-- BACKUP PAGE -->
+<div class="page" id="page-backup">
+  <div class="section-header" style="margin-bottom:14px;">
+    <div style="font-size:1.05rem;font-weight:800;color:#e8c97a;display:flex;align-items:center;gap:8px;">
+      <span style="width:3px;height:14px;background:#e8c97a;border-radius:2px;display:inline-block;"></span>
+      ☁️ גיבויים וניהול נתונים
+    </div>
+  </div>
+
+  <!-- Google Drive card -->
+  <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac2);border-radius:var(--r) var(--r) 0 0;"></div>
+    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:12px;display:flex;align-items:center;gap:7px;">
+      <span style="width:3px;height:11px;background:var(--ac2);border-radius:2px;flex-shrink:0;"></span>
+      חיבור Google Drive
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span id="gd-status-backup" style="font-size:.82rem;color:var(--tx2);">☁️ לא מחובר</span>
+      <span id="gd-user-backup" style="font-size:.75rem;color:var(--ac);display:none;"></span>
+    </div>
+    <button id="gd-btn-backup" onclick="gdLogin()" style="width:100%;padding:12px;border-radius:var(--rs);background:rgba(59,130,246,.1);color:var(--ac2);border:1.5px solid rgba(59,130,246,.4);font-family:var(--fn);font-size:.88rem;font-weight:700;cursor:pointer;">☁️ חיבור Google Drive</button>
+  </div>
+
+  <!-- PWA install card -->
+  <div id="backup-install-card" style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;display:none;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:#e8c97a;border-radius:var(--r) var(--r) 0 0;"></div>
+    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:12px;">📲 התקנה כאפליקציה</div>
+    <p style="font-size:.82rem;color:var(--tx2);margin-bottom:12px;line-height:1.5;">ניתן להתקין את האפליקציה על מסך הבית לגישה מהירה ללא דפדפן.</p>
+    <button id="pwa-install-btn" onclick="pwaInstall()" style="width:100%;padding:12px;border-radius:var(--rs);background:rgba(201,168,76,.1);color:#e8c97a;border:1.5px solid rgba(201,168,76,.4);font-family:var(--fn);font-size:.88rem;font-weight:700;cursor:pointer;">📲 התקן כאפליקציה</button>
+  </div>
+
+  <!-- Export/Import card -->
+  <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac);border-radius:var(--r) var(--r) 0 0;"></div>
+    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:14px;display:flex;align-items:center;gap:7px;">
+      <span style="width:3px;height:11px;background:var(--ac);border-radius:2px;flex-shrink:0;"></span>
+      ייצוא / ייבוא נתונים
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button onclick="exportData()" style="padding:12px 8px;border-radius:var(--rs);background:rgba(0,200,150,.08);color:var(--ac);border:1.5px solid rgba(0,200,150,.35);font-family:var(--fn);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.3rem;">📤</span>ייצוא JSON</button>
+      <button onclick="document.getElementById('import-file-backup').click()" style="padding:12px 8px;border-radius:var(--rs);background:rgba(59,130,246,.08);color:var(--ac2);border:1.5px solid rgba(59,130,246,.35);font-family:var(--fn);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:1.3rem;">📥</span>ייבוא JSON</button>
+    </div>
+    <input type="file" id="import-file-backup" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+
+  <!-- Danger zone -->
+  <div style="background:var(--sf);border:1px solid rgba(239,68,68,.3);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--er);border-radius:var(--r) var(--r) 0 0;"></div>
+    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--er);margin-bottom:12px;">⚠️ אזור מסוכן</div>
+    <button onclick="hardReset()" style="width:100%;padding:12px;border-radius:var(--rs);background:rgba(239,68,68,.08);color:var(--er);border:1.5px solid rgba(239,68,68,.35);font-family:var(--fn);font-size:.88rem;font-weight:700;cursor:pointer;">🗑️ מחיקת כל הנתונים</button>
+  </div>
+</div>
+
 </main>
 
 <!-- ADD INCOME QUICK MODAL -->
@@ -1405,15 +1370,16 @@ function setNav(id) {
 function toggleMainMenu() {
   const panel = document.getElementById('main-menu-panel');
   const overlay = document.getElementById('menu-overlay');
-  const open = panel.classList.toggle('open');
-  overlay.classList.toggle('open', open);
-  document.getElementById('nav-menu').classList.toggle('active', open);
-  if (open) closeSettings();
+  const isOpen = panel.style.display === 'block';
+  panel.style.display = isOpen ? 'none' : 'block';
+  overlay.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) closeSettings();
 }
 function closeMainMenu() {
-  document.getElementById('main-menu-panel').classList.remove('open');
-  document.getElementById('menu-overlay').classList.remove('open');
-  document.getElementById('nav-menu').classList.remove('active');
+  const panel = document.getElementById('main-menu-panel');
+  const overlay = document.getElementById('menu-overlay');
+  if (panel) panel.style.display = 'none';
+  if (overlay) overlay.style.display = 'none';
 }
 function closeSettings() {
   const d=document.getElementById('settings-drawer');
@@ -2800,21 +2766,16 @@ let gdToken = null, gdTokenExpiry = 0, gdUserId = null, gdFileId = null, gdSynci
 
 function gdUserKey(k) { return gdUserId ? `ks_${gdUserId}_${k}` : null; }
 function gdSetStatus(txt, color) {
-  const s = document.getElementById('gd-status');
-  if (s) { s.textContent = txt; s.style.color = color || 'var(--muted)'; }
-  // sync backup card status
-  const bs = document.getElementById('backup-gd-status');
-  if (bs) { bs.textContent = txt; bs.style.color = color || 'var(--muted)'; }
-  const bb = document.getElementById('backup-gd-btn');
-  if (bb) {
-    if (gdToken) {
-      bb.classList.add('connected');
-      document.getElementById('backup-gd-label').textContent = 'Drive מחובר ✓';
-    } else {
-      bb.classList.remove('connected');
-      document.getElementById('backup-gd-label').textContent = 'Google Drive';
-    }
-  }
+  ['gd-status','gd-status-backup'].forEach(id => {
+    const s = document.getElementById(id);
+    if (s) { s.textContent = txt; s.style.color = color || 'var(--tx2)'; }
+  });
+  const ub = document.getElementById('gd-user-backup');
+  const u = document.getElementById('gd-user');
+  if (ub && u) { ub.textContent = u.textContent; ub.style.display = u.style.display; }
+  // update btn
+  const btn = document.getElementById('gd-btn-backup');
+  if (btn) btn.textContent = gdToken ? '🔗 מחובר — לחץ לניתוק' : '☁️ חיבור Google Drive';
 }
 function gdIsTokenValid() { return gdToken && Date.now() < gdTokenExpiry - 60000; }
 
@@ -2931,16 +2892,6 @@ async function gdSync() {
   await gdSave();
 }
 
-function showToast(msg, type) {
-  const t = document.getElementById('app-toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.className = 'toast' + (type ? ' ' + type : '');
-  t.classList.add('show');
-  clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-}
-
 function renderGdUI() {
   const btn = document.getElementById('gd-btn');
   const user = document.getElementById('gd-user');
@@ -2973,27 +2924,18 @@ window.save = function() {
   }
 };
 
-function backupGdToggle() {
-  if (gdToken) gdLogout();
-  else gdLogin();
-}
-
 // ===================== PWA INSTALL =====================
 let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  ['pwa-install-btn','backup-install-btn'].forEach(id=>{
-    const btn = document.getElementById(id);
-    if (btn) btn.style.display = '';
-  });
+  const card = document.getElementById('backup-install-card');
+  if (card) card.style.display = 'block';
 });
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
-  ['pwa-install-btn','backup-install-btn'].forEach(id=>{
-    const btn = document.getElementById(id);
-    if (btn) btn.style.display = 'none';
-  });
+  const card = document.getElementById('backup-install-card');
+  if (card) card.style.display = 'none';
 });
 function pwaInstall() {
   if (!deferredInstallPrompt) return;
@@ -3021,8 +2963,6 @@ document.addEventListener('DOMContentLoaded', function() {
   renderGdUI();
 });
 </script>
-<div class="toast" id="app-toast"></div>
-
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
