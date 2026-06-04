@@ -20,22 +20,42 @@
 <meta name="theme-color" content="#c9a84c">
 <script>
 (function(){
+  function makeIcon(size) {
+    var c = document.createElement("canvas");
+    c.width = c.height = size;
+    var x = c.getContext("2d");
+    x.fillStyle = "#0f1117";
+    x.fillRect(0, 0, size, size);
+    x.fillStyle = "#c9a84c";
+    x.beginPath();
+    x.arc(size/2, size/2, size*0.46, 0, Math.PI*2);
+    x.fill();
+    x.fillStyle = "#0f1117";
+    x.font = "bold " + Math.round(size*0.38) + "px serif";
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.fillText("קס", size/2, size*0.52);
+    return c.toDataURL("image/png");
+  }
+  var base = location.pathname.endsWith("/")
+    ? location.pathname
+    : location.pathname.split("/").slice(0,-1).join("/") + "/";
   // Inline manifest — works on ANY domain without external manifest.json file
   const manifest = {
     name: 'קרן סיוע',
     short_name: 'קרן סיוע',
     description: 'מערכת ניהול קרן סיוע',
-    start_url: location.pathname + location.search,
-    scope: location.pathname,
+    start_url: base,
+    scope: base,
     display: 'standalone',
-    background_color: '#0a0e14',
+    background_color: '#0f1117',
     theme_color: '#c9a84c',
     dir: 'rtl',
     lang: 'he',
     orientation: 'portrait',
     icons: [
-      { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-      { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      { src: makeIcon(192), sizes: '192x192', type: 'image/png' },
+      { src: makeIcon(512), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
     ]
   };
   const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
@@ -44,851 +64,499 @@
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&family=Frank+Ruhl+Libre:wght@300;400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0f1117;
-  --surface: #181b24;
-  --surface2: #1f2334;
-  --border: #2a2f45;
-  --gold: #c9a84c;
-  --gold2: #e8c97a;
-  --teal: #2ec4b6;
-  --red: #e05260;
-  --green: #3cb371;
-  --blue: #4a90d9;
-  --purple: #7c5cbf;
-  --text: #e8e8f0;
-  --muted: #7a7f9a;
-  --radius: 14px;
-  --nav-h: 62px;
-  --header-h: 52px;
-}
-body.light-mode {
-  --bg:#f0f2f8; --surface:#ffffff; --surface2:#e8ecf5; --border:#c8cfe0;
-  --text:#1a1d2e; --muted:#5a6080; --gold2:#8a6010;
-  --teal:#1a9e96; --red:#c03040; --green:#277a4c; --blue:#2a6eb0; --purple:#5c3ea0;
-}
-body.light-mode { background:var(--bg) !important; color:var(--text) !important; }
-body.light-mode header { background:#fff !important; border-bottom-color:var(--border) !important; }
-body.light-mode main { background:var(--bg) !important; }
-body.light-mode .kpi,body.light-mode .chart-box,body.light-mode .person-card,
-body.light-mode .person-item,body.light-mode .table-wrap,body.light-mode .tithe-card,
-body.light-mode .modal,body.light-mode .bottom-nav,body.light-mode .main-menu-panel,
-body.light-mode .settings-drawer,body.light-mode .summary-bar {
-  background:var(--surface) !important; border-color:var(--border) !important; }
-body.light-mode th { background:var(--surface2) !important; color:var(--muted) !important; }
-body.light-mode td { color:var(--text) !important; background:var(--surface) !important; }
-body.light-mode tr:nth-child(even) td { background:#f5f7fc !important; }
-body.light-mode .kpi-label,.light-mode .chart-title,.light-mode .tithe-card-title,
-body.light-mode .section-title { color:var(--muted) !important; }
-body.light-mode .section-title { color:var(--gold2) !important; }
-body.light-mode .modal-title,.light-mode .logo { color:var(--gold2) !important; }
-body.light-mode .logo small,.light-mode .nav-item,.light-mode .chart-title,
-body.light-mode .kpi-label,.light-mode .person-row .label,.light-mode .tithe-card-title,
-body.light-mode .main-menu-title { color:var(--muted) !important; }
-body.light-mode .nav-item.active,.light-mode .main-menu-item.active { color:var(--gold2) !important; }
-body.light-mode .main-menu-item { color:var(--text) !important; }
-body.light-mode .sub-tab { color:var(--muted) !important; border-color:var(--border) !important; background:var(--surface2) !important; }
-body.light-mode .sub-tab.active { background:var(--gold) !important; color:#111 !important; }
-body.light-mode .form-group input,body.light-mode .form-group select,body.light-mode .form-group textarea {
-  background:var(--surface2) !important; color:var(--text) !important; border-color:var(--border) !important; }
-body.light-mode .btn-secondary { background:var(--surface2) !important; color:var(--text) !important; border-color:var(--border) !important; }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Heebo', sans-serif;
-  overflow-x: hidden;
-  font-size: 15px;
-}
-
-/* ---- Header ---- */
-header {
-  background: linear-gradient(135deg, #1a1d2e 0%, #0f1117 100%);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--header-h);
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 200;
-}
-.logo { font-family: 'Frank Ruhl Libre', serif; font-size: 20px; font-weight: 700; color: var(--gold2); }
-.logo small { color: var(--muted); font-size: 11px; font-family: 'Heebo', sans-serif; font-weight: 300; display: block; line-height: 1; }
-.settings-btn {
-  width: 38px; height: 38px;
-  border-radius: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 18px;
-  transition: all 0.15s;
-}
-.settings-btn:hover, .settings-btn.open { color: var(--gold2); border-color: var(--gold); }
-
-/* ---- Settings Drawer ---- */
-.settings-drawer {
-  position: fixed;
-  bottom: var(--nav-h);left:0;right:0;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  border-radius: 20px 20px 0 0;
-  padding: 14px 16px 20px;
-  z-index: 195;
-  transform: translateY(110%);
-  transition: transform 0.25s ease;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.4);
-}
-.settings-drawer.open { transform: translateY(0); }
-.sd-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
-.settings-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
-.settings-row + .settings-row { margin-top: 10px; }
-.settings-row span { min-width: 80px; }
-.settings-row input[type=number] {
-  width: 56px;
-  background: var(--surface2);
-  border: 1px solid var(--gold);
-  border-radius: 8px;
-  color: var(--gold2);
-  font-family: 'Heebo', sans-serif;
-  font-size: 15px; font-weight: 700;
-  text-align: center;
-  padding: 5px 4px;
-  outline: none;
-}
-
-/* ---- Bottom Nav ---- */
-.bottom-nav {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: var(--nav-h);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: stretch;
-  z-index: 200;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  cursor: pointer;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 500;
-  transition: color 0.15s;
-  padding: 8px 2px;
-  border: none; background: none;
-  position: relative;
-}
-.nav-item .nav-icon { font-size: 20px; line-height: 1; }
-.nav-item.active { color: var(--gold2); }
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 20%; right: 20%;
-  height: 2px;
-  background: var(--gold2);
-  border-radius: 0 0 3px 3px;
-}
-/* FAB add button */
-.nav-fab {
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: var(--gold);
-  color: #111;
-  font-size: 28px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px rgba(201,168,76,0.5);
-  margin-bottom: 12px;
-  flex-shrink: 0;
-  transition: transform 0.15s, background 0.15s;
-  line-height: 1;
-}
-.nav-fab:active { transform: scale(0.93); background: var(--gold2); }
-/* Main menu panel */
-.main-menu-panel {
-  position: fixed;
-  bottom: var(--nav-h);
-  left: 0; right: 0;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  z-index: 190;
-  transform: translateY(100%);
-  transition: transform 0.25s ease;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
-  border-radius: 20px 20px 0 0;
-  padding: 8px 0 8px;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-.main-menu-panel.open { transform: translateY(0); }
-.main-menu-title {
-  font-size: 11px; font-weight: 700; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 1px;
-  padding: 4px 20px 10px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 4px;
-}
-.main-menu-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 13px 20px;
-  cursor: pointer;
-  font-size: 15px; font-weight: 500;
-  color: var(--text);
-  transition: background 0.12s;
-}
-.main-menu-item span { font-size: 20px; }
-.main-menu-item:active { background: rgba(255,255,255,0.05); }
-.main-menu-item.active { color: var(--gold2); background: rgba(201,168,76,0.07); }
-/* Settings drawer triggered from bottom */
-#nav-settings-btn.active { color: var(--gold2); }
-/* more button */
-.nav-more-panel {
-  position: fixed;
-  bottom: var(--nav-h);
-  left: 0; right: 0;
-  background: var(--surface2);
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  z-index: 190;
-  transform: translateY(100%);
-  transition: transform 0.25s ease;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
-}
-.nav-more-panel.open { transform: translateY(0); }
-.nav-more-item {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; padding: 16px 8px;
-  cursor: pointer; font-size: 11px; color: var(--muted);
-  border-right: 1px solid var(--border);
-  transition: all 0.15s;
-}
-.nav-more-item:last-child { border-right: none; }
-.nav-more-item .nav-icon { font-size: 22px; }
-.nav-more-item.active { color: var(--gold2); background: rgba(201,168,76,0.08); }
-.nav-more-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-.more-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  z-index: 185;
-}
-.more-overlay.open { display: block; }
-
-/* ---- Main scroll area ---- */
-main {
-  padding: 12px 12px calc(var(--nav-h) + 24px);
-  margin-top: var(--header-h);
-  overflow-y: auto;
-  min-height: calc(100vh - var(--header-h));
-}
-.page { display: none; }
-.page.active { display: block; }
-
-/* ---- KPI grid ---- */
-.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.kpi {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 12px 12px;
-  position: relative;
-  overflow: hidden;
-}
-.kpi::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: 0 0 var(--radius) var(--radius);
-}
-.kpi.gold::after { background: var(--gold); }
-.kpi.teal::after { background: var(--teal); }
-.kpi.red::after { background: var(--red); }
-.kpi.green::after { background: var(--green); }
-.kpi.blue::after { background: var(--blue); }
-.kpi.purple::after { background: var(--purple); }
-.kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
-.kpi-value { font-size: 20px; font-weight: 800; line-height: 1; }
-.kpi.gold .kpi-value { color: var(--gold2); }
-.kpi.teal .kpi-value { color: var(--teal); }
-.kpi.red .kpi-value { color: var(--red); }
-.kpi.green .kpi-value { color: var(--green); }
-.kpi.blue .kpi-value { color: var(--blue); }
-.kpi.purple .kpi-value { color: var(--purple); }
-.kpi-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
-
-/* ---- Charts ---- */
-.charts-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
-.chart-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-}
-.chart-title { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
-.chart-box canvas { max-height: 200px; }
-
-/* ---- Person cards ---- */
-.persons-grid { display: flex; flex-direction: column; gap: 10px; }
-.person-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-}
-.person-name { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--text); display: flex; align-items: center; gap: 8px; }
-.person-name .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.person-rows { display: flex; flex-direction: column; gap: 7px; }
-.person-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-.person-row .label { color: var(--muted); }
-.person-row .val { font-weight: 700; }
-.person-row .val.pos { color: var(--green); }
-.person-row .val.neg { color: var(--red); }
-.person-row .val.gold { color: var(--gold2); }
-
-/* ---- Section layout ---- */
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.section-title { font-family: 'Frank Ruhl Libre', serif; font-size: 18px; font-weight: 700; color: var(--gold2); }
-
-/* ---- Buttons ---- */
-.btn {
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-family: 'Heebo', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s;
-  display: inline-flex; align-items: center; gap: 5px;
-}
-.btn-primary { background: var(--gold); color: #111; }
-.btn-primary:active { background: var(--gold2); transform: scale(0.97); }
-.btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); font-size: 12px; padding: 5px 10px; border-radius: 7px; }
-.btn-danger:active { background: var(--red); color: #fff; }
-.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-
-/* ---- Table ---- */
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-table{width:100%;border-collapse:collapse;}
-th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:5px 6px;text-align:right;white-space:nowrap;}
-td{padding:5px 6px;font-size:12px;border-top:1px solid var(--border);}
-tr:active td{background:rgba(255,255,255,0.03);}
-.act-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:13px;border:none;cursor:pointer;background:transparent;margin-left:2px;vertical-align:middle;}
-.act-edit{color:var(--teal);border:1px solid var(--teal);}
-.act-edit:active{background:var(--teal);color:#111;}
-.act-del{color:var(--red);border:1px solid var(--red);}
-.act-del:active{background:var(--red);color:#fff;}
-
-/* ---- Cards list (mobile-friendly alternative to table) ---- */
-.card-list { display: flex; flex-direction: column; gap: 8px; }
-.record-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.record-card-main { flex: 1; min-width: 0; }
-.record-card-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.record-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.record-card-amount { font-size: 16px; font-weight: 800; white-space: nowrap; }
-.record-card-actions { display: flex; align-items: center; gap: 6px; }
-
-/* ---- Badge ---- */
-.badge {
-  display: inline-flex; align-items: center;
-  padding: 2px 9px; border-radius: 20px;
-  font-size: 11px; font-weight: 600;
-}
-.badge-green { background: rgba(60,179,113,0.15); color: var(--green); }
-.badge-red { background: rgba(224,82,96,0.15); color: var(--red); }
-.badge-gold { background: rgba(201,168,76,0.15); color: var(--gold2); }
-.badge-blue { background: rgba(74,144,217,0.15); color: var(--blue); }
-
-/* ---- Modal ---- */
-.modal-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.75);
-  z-index: 500;
-  align-items: flex-end;
-  justify-content: center;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px 20px 0 0;
-  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-  width: 100%;
-  max-height: 92vh;
-  overflow-y: auto;
-  animation: slideUp 0.25s ease;
-}
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
-.modal-title { font-family: 'Frank Ruhl Libre', serif; font-size: 19px; font-weight: 700; color: var(--gold2); margin-bottom: 18px; }
-.form-group { margin-bottom: 14px; }
-.form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
-.form-group input, .form-group select, .form-group textarea {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'Heebo', sans-serif;
-  font-size: 16px;
-  padding: 11px 13px;
-  outline: none;
-  transition: border-color 0.15s;
-  -webkit-appearance: none;
-}
-.form-group input:focus, .form-group select:focus { border-color: var(--gold); }
-.form-group input[type=checkbox] {
-  width: 20px; height: 20px;
-  min-width: 20px;
-  background: var(--surface2);
-  border: 2px solid var(--gold);
-  border-radius: 5px;
-  cursor: pointer;
-  accent-color: var(--gold);
-  padding: 0;
-  flex-shrink: 0;
-}
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.modal-actions { display: flex; gap: 10px; margin-top: 18px; }
-.modal-actions .btn { flex: 1; justify-content: center; padding: 13px; font-size: 15px; }
-
-/* ---- Sub-tabs ---- */
-.sub-tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
-.sub-tabs::-webkit-scrollbar { display: none; }
-.sub-tab {
-  padding: 7px 15px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 13px; font-weight: 500;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.sub-tab.active { background: var(--gold); color: #111; border-color: var(--gold); }
-
-/* ---- Summary bar ---- */
-.summary-bar {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  display: flex; gap: 14px; flex-wrap: wrap;
-  margin-bottom: 12px;
-  font-size: 12px;
-}
-.summary-item .s-label { color: var(--muted); margin-left: 4px; }
-.summary-item .s-val { font-weight: 700; }
-.summary-item .s-val.gold { color: var(--gold2); }
-.summary-item .s-val.green { color: var(--green); }
-.summary-item .s-val.red { color: var(--red); }
-
-/* ---- Salary grid ---- */
-.sg-cell {
-  padding: 7px 8px;
-  font-size: 12px;
-  border: 1px solid var(--border);
-  text-align: center;
-  white-space: nowrap;
-}
-.sg-cell:first-child { text-align: right; font-weight: 600; }
-.sg-head { background: var(--surface2); color: var(--muted); font-size: 10px; font-weight: 600; }
-.sg-total { font-weight: 700; color: var(--gold2); background: rgba(201,168,76,0.07); }
-.sg-edit { cursor: pointer; }
-.sg-edit:active { background: rgba(255,255,255,0.06); }
-
-/* ---- Persons manage ---- */
-.persons-list { display: flex; flex-direction: column; gap: 8px; }
-.person-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.person-item-name { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
-.person-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
-.person-item-badges { display: flex; gap: 5px; flex-wrap: wrap; }
-.person-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-/* ---- Tithe cards ---- */
-.tithe-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-.tithe-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 12px;
-}
-.tithe-card-title { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-.tithe-amount { font-size: 22px; font-weight: 800; color: var(--gold2); }
-.tithe-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
-
-.empty { text-align: center; color: var(--muted); padding: 36px 20px; font-size: 14px; }
-
-/* ---- Desktop overrides ---- */
-@media (min-width: 600px) {
-  main { padding: 16px; }
-  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-  .charts-grid { display: grid; grid-template-columns: 2fr 1fr; }
-  .persons-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
-  .tithe-breakdown { grid-template-columns: repeat(4, 1fr); }
-  .chart-box canvas { max-height: 240px; }
-  .bottom-nav { display: none; }
-  /* Desktop top tabs instead */
-  .desktop-tabs {
-    display: flex !important;
-    gap: 2px;
-    padding: 14px 16px 0;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    overflow-x: auto;
-    position: sticky;
-    top: var(--header-h);
-    z-index: 150;
+  :root{
+    --bg:#0a0e14;--sf:#131820;--sf2:#1c2330;--sf3:#242d3b;
+    --bd:#2a3547;--ac:#c9a84c;--ac2:#3b82f6;--ac3:#f59e0b;
+    --er:#ef4444;--ok:#22c55e;--tx:#e2eaf4;--tx2:#8899b0;--tx3:#5c6e84;
+    --r:14px;--rs:9px;--fn:'Heebo',sans-serif;--bnav-h:64px;
   }
-  .desktop-tab {
-    padding: 9px 16px;
-    border-radius: 9px 9px 0 0;
-    cursor: pointer;
-    font-size: 13px; font-weight: 500;
-    color: var(--muted);
-    border: 1px solid transparent;
-    border-bottom: none;
-    white-space: nowrap;
-    transition: all 0.15s;
+  body.light{
+    --bg:#f0f4f8;--sf:#fff;--sf2:#e8eef5;--sf3:#dde5ee;
+    --bd:#c8d5e3;--tx:#1a2332;--tx2:#4a5e74;--tx3:#7a92a8;--er:#dc2626;--ok:#16a34a;
   }
-  .desktop-tab:hover { color: var(--text); background: var(--surface2); }
-  .desktop-tab.active {
-    color: var(--gold2);
-    background: var(--bg);
-    border-color: var(--border);
-    border-bottom-color: var(--bg);
-    margin-bottom: -1px;
+  body.light .hdr{background:linear-gradient(160deg,#e8eef5,#f0f4f8)!important;border-bottom-color:var(--bd);}
+  body.light .menu-item{background:var(--sf2);border-color:var(--bd);color:var(--tx2);}
+  body.light .bnav{background:var(--sf);border-top-color:var(--bd);}
+  body.light .settings-panel,.body.light .menu-panel{background:var(--sf);}
+  body.light .theme-opt{background:var(--sf2);border-color:var(--bd);color:var(--tx2);}
+  body.light .card{background:var(--sf);}
+  body.light tbody tr:hover{background:rgba(201,168,76,.06);}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100vh;font-size:15px;}
+
+  /* ══ BOTTOM NAV ══ */
+  .bnav{display:none;}
+  @media(max-width:899px){
+    .bnav{display:flex;align-items:center;justify-content:space-around;position:fixed;bottom:0;left:0;right:0;height:var(--bnav-h);background:var(--sf);border-top:1px solid var(--bd);z-index:250;padding:0 8px;padding-bottom:env(safe-area-inset-bottom,0px);}
+    .hdr .tabs{display:none;}
+    .wrap{padding-bottom:calc(var(--bnav-h) + 20px)!important;}
   }
-  .modal { border-radius: 16px; max-width: 480px; margin: auto; }
-  .modal-overlay { align-items: center; }
-  main { margin-bottom: 0; }
-  .settings-drawer { display: none; }
-  header .settings-btn { display: none; }
-  .header-settings-inline { display: flex !important; }
-}
-.desktop-tabs { display: none; }
-.header-settings-inline {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.header-settings-inline input[type=number] {
-  width: 46px;
-  background: var(--surface2);
-  border: 1px solid var(--gold);
-  border-radius: 6px;
-  color: var(--gold2);
-  font-size: 13px; font-weight: 700;
-  text-align: center;
-  padding: 3px 4px;
-  outline: none;
-  font-family: 'Heebo', sans-serif;
-}
-</style>
+  .bnav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:1;background:none;border:none;cursor:pointer;color:var(--tx3);font-family:var(--fn);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px 4px;transition:color .18s;}
+  .bnav-btn:active{opacity:.7;}
+  .bnav-btn.active{color:var(--ac);}
+  .bnav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .bnav-plus{flex:0 0 60px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--ac),#a88530);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(201,168,76,.45);margin-bottom:12px;transform:translateY(-6px);transition:transform .15s,box-shadow .15s;color:#1a0f00;}
+  .bnav-plus:active{transform:translateY(-4px) scale(.95);box-shadow:0 2px 10px rgba(201,168,76,.3);}
+  .bnav-plus svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ══ MENU DRAWER ══ */
+  .menu-drawer{position:fixed;inset:0;z-index:400;display:none;align-items:flex-end;justify-content:center;}
+  .menu-drawer.open{display:flex;}
+  .menu-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);}
+  .menu-panel{position:relative;z-index:1;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:480px;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));animation:su .25s ease;}
+  .menu-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx3);margin-bottom:12px;text-align:center;}
+  .menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .menu-item{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--sf2);border-radius:var(--r);padding:14px 8px;cursor:pointer;font-family:var(--fn);font-size:.78rem;font-weight:700;color:var(--tx2);transition:all .18s;border:1.5px solid var(--bd);}
+  .menu-item:active{transform:scale(.97);}
+  .menu-item.active-tab{background:rgba(201,168,76,.1);color:var(--ac);border-color:var(--ac)!important;}
+  .menu-item-icon{font-size:1.5rem;line-height:1;}
+
+  /* ══ SETTINGS DRAWER ══ */
+  .settings-drawer{position:fixed;inset:0;z-index:400;display:none;align-items:flex-end;justify-content:center;}
+  .settings-drawer.open{display:flex;}
+  .settings-panel{position:relative;z-index:1;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:480px;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));animation:su .25s ease;max-height:85vh;overflow-y:auto;}
+  .settings-title{font-size:1rem;font-weight:800;margin-bottom:16px;}
+  .theme-row{display:flex;gap:10px;margin-bottom:4px;}
+  .theme-opt{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 8px;border-radius:var(--rs);border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;font-family:var(--fn);font-size:.82rem;font-weight:700;color:var(--tx2);transition:all .18s;}
+  .theme-opt.active{border-color:var(--ac);color:var(--ac);background:rgba(201,168,76,.1);}
+  .theme-opt:active{transform:scale(.97);}
+
+  /* ══ HEADER ══ */
+  .hdr{background:linear-gradient(160deg,#0d1522,#131820);border-bottom:1px solid var(--bd);padding:18px 16px 0;position:sticky;top:0;z-index:200;}
+  .hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .hdr-t{font-size:1.25rem;font-weight:900;letter-spacing:-0.5px;}
+  .hdr-t span{background:linear-gradient(90deg,var(--ac),#e6c96a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .hdr-s{font-size:0.7rem;color:var(--tx3);margin-top:1px;}
+  .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex-shrink:0;padding:9px 14px;font-family:var(--fn);font-size:0.85rem;font-weight:600;color:var(--tx3);background:transparent;border:none;cursor:pointer;white-space:nowrap;position:relative;transition:color .2s;}
+  .tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--ac);border-radius:2px 2px 0 0;transform:scaleX(0);transition:transform .2s;}
+  .tab.active{color:var(--ac);}.tab.active::after{transform:scaleX(1);}
+  @media(min-width:900px){
+    .hdr{padding:18px 24px 0;}
+    .wrap{max-width:900px;padding:20px 24px;}
+  }
+
+  /* ══ LAYOUT ══ */
+  .wrap{max-width:560px;margin:0 auto;padding:14px;padding-top:10px;}
+  .page{display:none;}.page.active{display:block;}
+  @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ══ CARDS ══ */
+  .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;}
+  .ct{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx2);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+  .ctb{width:3px;height:12px;background:var(--ac);border-radius:2px;flex-shrink:0;}
+
+  /* ══ BUTTONS ══ */
+  .btn{width:100%;background:linear-gradient(135deg,var(--ac),#a88530);border:none;border-radius:var(--r);color:#1a0f00;font-family:var(--fn);font-size:.95rem;font-weight:800;padding:14px;cursor:pointer;transition:opacity .2s,transform .1s;}
+  .btn:active{transform:scale(.98);opacity:.9;}
+  .gbtn{background:transparent;border:1.5px solid var(--bd);border-radius:var(--rs);color:var(--tx2);font-family:var(--fn);font-size:.75rem;font-weight:600;padding:7px 13px;cursor:pointer;transition:all .2s;width:auto;display:inline-flex;align-items:center;gap:5px;}
+  .gbtn:hover{border-color:var(--ac);color:var(--ac);}
+  .gbtn.d:hover{border-color:var(--er);color:var(--er);}
+  .gbtn.g:hover{border-color:var(--ac);color:var(--ac);}
+  .btn-primary{background:linear-gradient(135deg,var(--ac),#a88530);color:#1a0f00;border:none;border-radius:var(--rs);font-family:var(--fn);font-size:.88rem;font-weight:700;padding:10px 18px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+  .btn-secondary{background:var(--sf2);color:var(--tx);border:1px solid var(--bd);border-radius:var(--rs);font-family:var(--fn);font-size:.88rem;font-weight:600;padding:10px 18px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+  .btn-danger{background:transparent;color:var(--er);border:1px solid var(--er);border-radius:var(--rs);font-family:var(--fn);font-size:.82rem;font-weight:600;padding:5px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+
+  /* ══ FORMS ══ */
+  input,select,textarea{width:100%;background:var(--sf2);border:1.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:var(--fn);font-size:1rem;font-weight:500;padding:11px 13px;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+  input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(201,168,76,.1);}
+  input[type=date]{color-scheme:dark;}
+  select option{background:#1c2330;}
+  body.light input[type=date]{color-scheme:light;}
+  body.light select option{background:#e8eef5;}
+  .form-group{margin-bottom:12px;}
+  .form-group label{display:block;font-size:.85rem;font-weight:700;color:var(--tx);margin-bottom:5px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* ══ TABLES ══ */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rs);border:1px solid var(--bd);}
+  table{width:100%;min-width:0;border-collapse:collapse;font-size:.72rem;}
+  thead tr{background:var(--sf2);}
+  thead th{position:sticky;top:0;z-index:10;background:var(--sf2);padding:8px;text-align:right;font-weight:700;color:var(--tx3);font-size:.67rem;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid var(--bd);}
+  tbody tr{border-bottom:1px solid rgba(42,53,71,.5);transition:background .12s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:8px;vertical-align:middle;}
+  .act-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:13px;border:none;cursor:pointer;background:transparent;margin-left:2px;}
+  .act-edit{color:var(--ac2);border:1px solid var(--ac2);}
+  .act-edit:active{background:var(--ac2);color:#fff;}
+  .act-del{color:var(--er);border:1px solid var(--er);}
+  .act-del:active{background:var(--er);color:#fff;}
+
+  /* ══ MODALS ══ */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r) var(--r) 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-height:92vh;overflow-y:auto;animation:su .25s ease;}
+  @media(min-width:600px){.modal{border-radius:var(--r);max-width:480px;margin:auto;}.modal-overlay{align-items:center;}}
+  .modal-handle{width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px;}
+  .modal-title{font-size:1.1rem;font-weight:800;color:var(--tx);margin-bottom:18px;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+  .modal-actions .btn-primary,.modal-actions .btn-secondary{flex:1;justify-content:center;padding:13px;font-size:.95rem;}
+
+  /* ══ SECTION HEADERS ══ */
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .section-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--tx2);}
+
+  /* ══ SUB-TABS ══ */
+  .sub-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+  .sub-tabs::-webkit-scrollbar{display:none;}
+  .sub-tab{padding:7px 15px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--tx3);border:1px solid var(--bd);transition:all .15s;white-space:nowrap;background:transparent;}
+  .sub-tab.active{background:rgba(201,168,76,.12);color:var(--ac);border-color:var(--ac);}
+
+  /* ══ KPI CARDS (dashboard) ══ */
+  .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+  @media(min-width:480px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+  .kpi-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0;}
+  .kpi-card.green::before{background:var(--ok);}
+  .kpi-card.gold::before{background:var(--ac);}
+  .kpi-card.blue::before{background:var(--ac2);}
+  .kpi-card.red::before{background:var(--er);}
+  .kpi-card.yellow::before{background:var(--ac3);}
+  .kpi-label{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:6px;}
+  .kpi-value{font-size:1.25rem;font-weight:900;color:var(--tx);line-height:1.1;}
+  .kpi-value.gold{color:var(--ac);}
+  .kpi-value.green{color:var(--ok);}
+  .kpi-value.blue{color:var(--ac2);}
+  .kpi-value.red{color:var(--er);}
+  .kpi-sub{font-size:.62rem;color:var(--tx3);margin-top:3px;}
+
+  /* ══ PERSONS GRID ══ */
+  .persons-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+  @media(min-width:560px){.persons-grid{grid-template-columns:1fr 1fr;}}
+  .person-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;}
+  .person-name{font-size:15px;font-weight:700;margin-bottom:10px;color:var(--tx);display:flex;align-items:center;gap:8px;}
+  .person-name .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .person-rows{display:flex;flex-direction:column;gap:7px;}
+  .person-row{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;}
+  .person-row .label{color:var(--tx3);}
+  .person-row .val{font-weight:700;}
+  .person-row .val.pos{color:var(--ok);}
+  .person-row .val.neg{color:var(--er);}
+  .person-row .val.gold{color:var(--ac);}
+
+  /* ══ PERSON ITEMS (manage) ══ */
+  .person-item{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+  .person-item-name{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;}
+  .person-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+  .person-item-actions{display:flex;gap:6px;flex-shrink:0;}
+
+  /* ══ CHART BOX ══ */
+  .charts-grid{display:grid;grid-template-columns:1fr;gap:0;}
+  @media(min-width:600px){.charts-grid{grid-template-columns:2fr 1fr;gap:0 12px;}}
+  .chart-box{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:12px;}
+  .chart-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:10px;}
+  .chart-box canvas{width:100%!important;display:block;max-height:200px;}
+
+  /* ══ SALARY GRID ══ */
+  .sg-cell{padding:7px 8px;font-size:.78rem;border:1px solid var(--bd);text-align:center;white-space:nowrap;}
+  .sg-cell:first-child{text-align:right;font-weight:600;}
+  .sg-head{background:var(--sf2);color:var(--tx3);font-size:.65rem;font-weight:600;}
+  .sg-total{font-weight:700;color:var(--ac);background:rgba(201,168,76,.07);}
+  .sg-edit{cursor:pointer;}
+  .sg-edit:active{background:rgba(255,255,255,.06);}
+
+  /* ══ TITHE ══ */
+  .tithe-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  @media(min-width:480px){.tithe-breakdown{grid-template-columns:repeat(4,1fr);}}
+  .tithe-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px 12px;}
+  .tithe-card-title{font-size:.6rem;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .tithe-amount{font-size:1.35rem;font-weight:900;color:var(--ac);}
+  .tithe-sub{font-size:.65rem;color:var(--tx3);margin-top:3px;}
+
+  /* ══ BADGES ══ */
+  .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:.65rem;font-weight:600;}
+  .badge-green{background:rgba(34,197,94,.15);color:var(--ok);}
+  .badge-red{background:rgba(239,68,68,.15);color:var(--er);}
+  .badge-gold{background:rgba(201,168,76,.15);color:var(--ac);}
+  .badge-blue{background:rgba(59,130,246,.15);color:var(--ac2);}
+
+  /* ══ SUMMARY BAR ══ */
+  .summary-bar{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 14px;display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:.78rem;}
+  .summary-item .s-label{color:var(--tx3);margin-left:4px;}
+  .summary-item .s-val{font-weight:700;}
+  .summary-item .s-val.gold{color:var(--ac);}
+  .summary-item .s-val.green{color:var(--ok);}
+  .summary-item .s-val.red{color:var(--er);}
+
+  /* ══ MISC ══ */
+  .empty{text-align:center;color:var(--tx3);padding:36px 20px;font-size:.9rem;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--sf);border:1px solid var(--ok);border-radius:var(--r);color:var(--ok);font-size:.82rem;font-weight:600;padding:11px 22px;z-index:999;transition:transform .28s ease;white-space:nowrap;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast.e{border-color:var(--er);color:var(--er);}
+  .lrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .divl{height:1px;background:var(--bd);margin:12px 0;}
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">קרן סיוע<small>מערכת ניהול</small></div>
-  <div class="header-settings-inline">
-    <span>מעשרות:</span>
-    <input type="number" id="titheRateD" value="20" min="1" max="100" onchange="syncSettings('titheRateD')"> <span>%</span>
-    <span style="margin-right:8px">תרומה:</span>
-    <input type="number" id="donationRateD" value="50" min="0" max="100" onchange="syncSettings('donationRateD')"> <span>%+</span>
-    <input type="number" id="donationPeriodRateD" value="50" min="0" max="100" onchange="syncSettings('donationPeriodRateD')"> <span>%</span>
-  </div>
-  <div class="settings-btn" id="settings-btn-toggle" onclick="toggleSettings()">⚙️</div>
-</header>
-
-<div class="more-overlay" id="settings-overlay" onclick="toggleSettings()"></div>
-<div class="settings-drawer" id="settings-drawer">
-  <div class="sd-handle"></div>
-  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">הגדרות</div>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px">
-    <span style="font-size:14px;font-weight:600;color:var(--text)">מצב תצוגה</span>
-    <div style="display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden">
-      <div id="theme-dark" onclick="setTheme('dark')" style="padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--gold);color:#111">🌙 כהה</div>
-      <div id="theme-light" onclick="setTheme('light')" style="padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--muted)">☀️ בהיר</div>
-    </div>
-  </div>
-  <div class="settings-row">
-    <span>מעשרות:</span>
-    <input type="number" id="titheRate" value="20" min="1" max="100" onchange="syncSettings('titheRate')">
-    <span>%</span>
-  </div>
-  <div class="settings-row" style="margin-top:10px">
-    <span>תרומה:</span>
-    <input type="number" id="donationRate" value="50" min="0" max="100" onchange="syncSettings('donationRate')">
-    <span>% מתוספת +</span>
-    <input type="number" id="donationPeriodRate" value="50" min="0" max="100" onchange="syncSettings('donationPeriodRate')">
-    <span>% מקופה</span>
-  </div>
-  <!-- Google Drive -->
-  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">☁️ גיבוי ענן</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span id="gd-status" style="font-size:12px;color:var(--muted)">☁️ לא מחובר</span>
-      <span id="gd-user" style="font-size:11px;color:var(--teal);display:none"></span>
-    </div>
-    <button id="gd-btn" onclick="gdLogin()" style="width:100%;padding:10px;border-radius:10px;background:rgba(74,144,217,0.1);color:var(--blue);border:1px solid var(--blue);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">☁️ חיבור Google Drive</button>
-  </div>
-  <!-- Data management -->
-  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">ניהול נתונים</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button id="pwa-install-btn" onclick="pwaInstall()" style="display:none;width:100%;padding:10px;border-radius:10px;background:rgba(201,168,76,0.1);color:var(--gold2);border:1px solid var(--gold);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📲 התקן כאפליקציה</button>
-      <button onclick="exportData()" style="width:100%;padding:10px;border-radius:10px;background:rgba(46,196,182,0.1);color:var(--teal);border:1px solid var(--teal);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📤 ייצוא נתונים (JSON)</button>
-      <button onclick="document.getElementById('import-file').click()" style="width:100%;padding:10px;border-radius:10px;background:rgba(74,144,217,0.1);color:var(--blue);border:1px solid var(--blue);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">📥 ייבוא נתונים (JSON)</button>
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-      <button onclick="hardReset()" style="width:100%;padding:10px;border-radius:10px;background:rgba(224,82,96,0.1);color:var(--red);border:1px solid var(--red);font-family:Heebo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">🗑️ מחיקת כל הנתונים</button>
-    </div>
-  </div>
-</div>
-
-<div class="desktop-tabs">
-  <div class="desktop-tab active" onclick="showPage('dashboard',this)">📊 דשבורד</div>
-  <div class="desktop-tab" onclick="showPage('income',this)">💰 הכנסות</div>
-  <div class="desktop-tab" onclick="showPage('tithe',this)">✡️ מעשרות</div>
-  <div class="desktop-tab" onclick="showPage('loans',this)">📋 הלוואות</div>
-  <div class="desktop-tab" onclick="showPage('redemption',this)">🔓 פדיון</div>
-  <div class="desktop-tab" onclick="showPage('donations',this)">🕍 הנצחה</div>
-  <div class="desktop-tab" onclick="showPage('misc',this)">💸 תוספות</div>
-  <div class="desktop-tab" onclick="showPage('persons',this)">👥 אנשים</div>
-</div>
-
-<nav class="bottom-nav">
-  <button class="nav-item active" id="nav-menu" onclick="toggleMainMenu()"><span class="nav-icon">☰</span>תפריט</button>
-  <button class="nav-fab" id="nav-add" onclick="openAddIncomeModal()" title="הוספת הכנסה">＋</button>
-  <button class="nav-item" id="nav-settings-btn" onclick="toggleSettings()"><span class="nav-icon">⚙️</span>הגדרות</button>
-</nav>
-
-<!-- MAIN MENU PANEL -->
-<div class="more-overlay" id="menu-overlay" onclick="closeMainMenu()"></div>
-<div class="main-menu-panel" id="main-menu-panel">
-  <div class="main-menu-title">תפריט</div>
-  <div class="main-menu-item active" id="menuitem-dashboard" onclick="showPage('dashboard');closeMainMenu()"><span>📊</span>דשבורד</div>
-  <div class="main-menu-item" id="menuitem-income" onclick="showPage('income');closeMainMenu()"><span>💰</span>הכנסות</div>
-  <div class="main-menu-item" id="menuitem-tithe" onclick="showPage('tithe');closeMainMenu()"><span>✡️</span>מעשרות</div>
-  <div class="main-menu-item" id="menuitem-loans" onclick="showPage('loans');closeMainMenu()"><span>📋</span>הלוואות</div>
-  <div class="main-menu-item" id="menuitem-redemption" onclick="showPage('redemption');closeMainMenu()"><span>🔓</span>פדיון</div>
-  <div class="main-menu-item" id="menuitem-donations" onclick="showPage('donations');closeMainMenu()"><span>🕍</span>הנצחה</div>
-  <div class="main-menu-item" id="menuitem-misc" onclick="showPage('misc');closeMainMenu()"><span>💸</span>תוספות</div>
-  <div class="main-menu-item" id="menuitem-persons" onclick="showPage('persons');closeMainMenu()"><span>👥</span>אנשים</div>
-</div>
-
-<main>
-<!-- DASHBOARD -->
-<div class="page active" id="page-dashboard">
-  <div class="kpi-grid" id="kpi-grid"></div>
-  <div class="charts-grid">
-    <div class="chart-box">
-      <div class="chart-title">הכנסות לאורך שנים (עבודה)</div>
-      <canvas id="chartIncome"></canvas>
-    </div>
-    <div class="chart-box">
-      <div class="chart-title">חלוקת הכנסות נוספות</div>
-      <canvas id="chartSources"></canvas>
-    </div>
-  </div>
-  <div class="charts-grid">
-    <div class="chart-box">
-      <div class="chart-title">קופה אישית לפי שם</div>
-      <canvas id="chartKupa"></canvas>
-    </div>
-    <div class="chart-box">
-      <div class="chart-title">הלוואות vs החזרים</div>
-      <canvas id="chartLoans"></canvas>
-    </div>
-  </div>
-  <div class="persons-grid" id="persons-summary"></div>
-</div>
-
-<!-- INCOME -->
-<div class="page" id="page-income">
-  <div class="section-header">
-    <div class="section-title">תוספות</div>
-  </div>
-  <div class="sub-tabs">
-    <div class="sub-tab active" onclick="showSubTab('income','salary')">💼 משכורות</div>
-    <div class="sub-tab" onclick="showSubTab('income','shonot')">📦 תוספות</div>
-  </div>
-  <!-- SALARY -->
-  <div id="income-salary">
-    <div class="section-header">
-      <div style="color:var(--muted);font-size:13px">בחר שנה לעריכה</div>
-      <button class="btn btn-primary" onclick="addSalaryRow()">+ שנה חדשה</button>
-    </div>
-    <div id="salary-years-grid"></div>
-  </div>
-  <!-- SHONOT -->
-  <div id="income-shonot" style="display:none">
-    <div class="section-header">
-      <div style="display:flex;gap:6px;align-items:center">
-        <button onclick="toggleCatPanel('shonot')" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer" id="shonot-cat-toggle-btn">🏷️ סינון</button>
-        <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" onclick="openModal('modal-manage-categories')">📂</button>
+  <!-- ══ HEADER ══ -->
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="hdr-t">✡️ <span>קרן סיוע</span></div>
+        <div class="hdr-s">מערכת ניהול</div>
       </div>
-      <div style="display:flex;gap:6px">
-        <button class="btn btn-primary" onclick="openAddShonotModal()">+ הוסף</button>
+      <div id="gd-status-hdr" onclick="openSettingsDrawer()" title="גיבוי ענן" style="cursor:pointer;display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:80px;"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-dashboard" onclick="showPage('dashboard',this)">📊 דשבורד</button>
+      <button class="tab" id="tab-income" onclick="showPage('income',this)">💰 הכנסות</button>
+      <button class="tab" id="tab-tithe" onclick="showPage('tithe',this)">✡️ מעשרות</button>
+      <button class="tab" id="tab-loans" onclick="showPage('loans',this)">📋 הלוואות</button>
+      <button class="tab" id="tab-redemption" onclick="showPage('redemption',this)">🔓 פדיון</button>
+      <button class="tab" id="tab-donations" onclick="showPage('donations',this)">🕍 הנצחה</button>
+      <button class="tab" id="tab-misc" onclick="showPage('misc',this)">💸 תוספות</button>
+      <button class="tab" id="tab-persons" onclick="showPage('persons',this)">👥 אנשים</button>
+      <button class="tab" id="tab-backup" onclick="showPage('backup',this)">📦 גיבויים</button>
+    </div>
+  </div>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div class="wrap">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="charts-grid">
+      <div class="chart-box"><div class="chart-title">הכנסות לאורך שנים (עבודה)</div><canvas id="chartIncome"></canvas></div>
+      <div class="chart-box"><div class="chart-title">חלוקת הכנסות נוספות</div><canvas id="chartSources"></canvas></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-box"><div class="chart-title">קופה אישית לפי שם</div><canvas id="chartKupa"></canvas></div>
+      <div class="chart-box"><div class="chart-title">הלוואות vs החזרים</div><canvas id="chartLoans"></canvas></div>
+    </div>
+    <div class="persons-grid" id="persons-summary"></div>
+  </div>
+
+  <!-- INCOME -->
+  <div class="page" id="page-income">
+    <div class="card">
+      <div class="ct"><div class="ctb"></div>הכנסות</div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('income','salary')">💼 משכורות</div>
+        <div class="sub-tab" onclick="showSubTab('income','shonot')">📦 תוספות</div>
+      </div>
+      <div id="income-salary">
+        <div class="section-header">
+          <div style="color:var(--tx3);font-size:.82rem">בחר שנה לעריכה</div>
+          <button class="btn-primary" onclick="addSalaryRow()">+ שנה חדשה</button>
+        </div>
+        <div id="salary-years-grid"></div>
+      </div>
+      <div id="income-shonot" style="display:none">
+        <div class="section-header">
+          <div style="display:flex;gap:6px;align-items:center">
+            <button onclick="toggleCatPanel('shonot')" class="gbtn" id="shonot-cat-toggle-btn">🏷️ סינון</button>
+            <button class="gbtn" onclick="openModal('modal-manage-categories')">📂</button>
+          </div>
+          <button class="btn-primary" onclick="openAddShonotModal()">+ הוסף</button>
+        </div>
+        <div id="shonot-cat-panel" style="display:none;margin-bottom:10px">
+          <div id="shonot-cat-buttons" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--sf2);border-radius:var(--rs);border:1px solid var(--bd)"></div>
+        </div>
+        <div id="shonot-summary-bar" class="summary-bar"></div>
+        <div class="tw"><table><thead id="shonot-thead"><tr><th>קטגוריה</th><th>תיאור</th><th>תאריך</th><th>סכום</th><th>מעשרות</th><th></th></tr></thead><tbody id="shonot-tbody"></tbody></table></div>
       </div>
     </div>
-    <div id="shonot-cat-panel" style="display:none;margin-bottom:10px">
-      <div id="shonot-cat-buttons" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)"></div>
-    </div>
-    <div id="shonot-summary-bar" class="summary-bar" style="margin-bottom:10px"></div>
-    <div class="table-wrap table-scroll"><table><thead id="shonot-thead"><tr><th>קטגוריה</th><th>תיאור</th><th>תאריך</th><th>סכום</th><th>מעשרות</th><th></th></tr></thead><tbody id="shonot-tbody"></tbody></table></div>
   </div>
 
-</div>
-
-<!-- TITHE -->
-<div class="page" id="page-tithe">
-  <div class="section-header">
-    <div class="section-title">מעשרות</div>
-    <button class="btn btn-primary" onclick="openModal('modal-tithe-dist')">+ חלוקה</button>
-  </div>
-  <div class="tithe-breakdown" id="tithe-breakdown"></div>
-  <div class="sub-tabs">
-    <div class="sub-tab active" onclick="showSubTab('tithe','tithe-summary')">סיכום</div>
-    <div class="sub-tab" onclick="showSubTab('tithe','tithe-history')">היסטוריה</div>
-  </div>
-  <div id="tithe-summary">
-    <div class="table-wrap table-scroll">
-      <table>
-        <thead><tr><th>שם</th><th>מעשרות</th><th>תוספות</th><th>סה"כ</th><th>נפדה</th><th>יתרה</th><th>תרומה</th></tr></thead>
-        <tbody id="tithe-tbody"></tbody>
-      </table>
+  <!-- TITHE -->
+  <div class="page" id="page-tithe">
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--ac)"></div>מעשרות</div>
+      <div class="section-header" style="margin-bottom:12px">
+        <div></div>
+        <button class="btn-primary" onclick="openModal('modal-tithe-dist')">+ חלוקה</button>
+      </div>
+      <div class="tithe-breakdown" id="tithe-breakdown"></div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('tithe','tithe-summary')">סיכום</div>
+        <div class="sub-tab" onclick="showSubTab('tithe','tithe-history')">היסטוריה</div>
+      </div>
+      <div id="tithe-summary">
+        <div class="tw"><table><thead><tr><th>שם</th><th>מעשרות</th><th>תוספות</th><th>סה"כ</th><th>נפדה</th><th>יתרה</th><th>תרומה</th></tr></thead><tbody id="tithe-tbody"></tbody></table></div>
+      </div>
+      <div id="tithe-history" style="display:none">
+        <div class="tw"><table><thead><tr><th>תאריך</th><th>סכום כולל</th><th>מקבלים</th><th>לכל אחד</th><th></th></tr></thead><tbody id="tithe-hist-tbody"></tbody></table></div>
+      </div>
     </div>
   </div>
-  <div id="tithe-history" style="display:none">
-    <div class="table-wrap table-scroll">
-      <table>
-        <thead><tr><th>תאריך</th><th>סכום כולל</th><th>מקבלים</th><th>לכל אחד</th><th></th></tr></thead>
-        <tbody id="tithe-hist-tbody"></tbody>
-      </table>
+
+  <!-- LOANS -->
+  <div class="page" id="page-loans">
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--ac2)"></div>הלוואות והחזרים</div>
+      <div class="section-header" style="margin-bottom:12px">
+        <div></div>
+        <button class="btn-primary" onclick="openModal('modal-loan')">+ הלוואה חדשה</button>
+      </div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSubTab('loans','all-loans')">הלוואות</div>
+        <div class="sub-tab" onclick="showSubTab('loans','repayments')">החזרים</div>
+        <div class="sub-tab" onclick="showSubTab('loans','balance')">יתרות</div>
+      </div>
+      <div id="all-loans"><div class="tw"><table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="loans-tbody"></tbody></table></div></div>
+      <div id="repayments" style="display:none">
+        <div class="section-header" style="margin-bottom:12px"><div></div><button class="btn-primary" onclick="openModal('modal-repay')">+ הוסף החזר</button></div>
+        <div class="tw"><table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="repay-tbody"></tbody></table></div>
+      </div>
+      <div id="balance" style="display:none"><div class="tw"><table><thead><tr><th>שם</th><th>סה"כ הלוואות</th><th>סה"כ החזרים</th><th>יתרת חוב</th></tr></thead><tbody id="balance-tbody"></tbody></table></div></div>
     </div>
   </div>
-</div>
 
-<!-- LOANS -->
-<div class="page" id="page-loans">
-  <div class="section-header">
-    <div class="section-title">הלוואות והחזרים</div>
-    <button class="btn btn-primary" onclick="openModal('modal-loan')">+ הלוואה חדשה</button>
-  </div>
-  <div class="sub-tabs">
-    <div class="sub-tab active" onclick="showSubTab('loans','all-loans')">הלוואות</div>
-    <div class="sub-tab" onclick="showSubTab('loans','repayments')">החזרים</div>
-    <div class="sub-tab" onclick="showSubTab('loans','balance')">יתרות</div>
-  </div>
-  <div id="all-loans">
-    <div class="table-wrap table-scroll">
-      <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="loans-tbody"></tbody></table>
+  <!-- REDEMPTION -->
+  <div class="page" id="page-redemption">
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--ok)"></div>פדיון</div>
+      <div class="section-header" style="margin-bottom:12px"><div></div><button class="btn-primary" onclick="openModal('modal-redeem')">+ פדיון חדש</button></div>
+      <div class="tw"><table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="redeem-tbody"></tbody></table></div>
     </div>
   </div>
-  <div id="repayments" style="display:none">
-    <div class="section-header">
-      <div></div>
-      <button class="btn btn-primary" onclick="openModal('modal-repay')">+ הוסף החזר</button>
-    </div>
-    <div class="table-wrap table-scroll">
-      <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="repay-tbody"></tbody></table>
-    </div>
-  </div>
-  <div id="balance" style="display:none">
-    <div class="table-wrap">
-      <table><thead><tr><th>שם</th><th>סה"כ הלוואות</th><th>סה"כ החזרים</th><th>יתרת חוב</th></tr></thead><tbody id="balance-tbody"></tbody></table>
+
+  <!-- DONATIONS -->
+  <div class="page" id="page-donations">
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--ac3)"></div>הנצחה ותרומות</div>
+      <div class="section-header" style="margin-bottom:12px"><div></div><button class="btn-primary" onclick="openModal('modal-donation')">+ תרומה חדשה</button></div>
+      <div id="donation-calc" style="margin-bottom:14px"></div>
+      <div class="tw"><table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="donation-tbody"></tbody></table></div>
     </div>
   </div>
-</div>
 
-<!-- REDEMPTION -->
-<div class="page" id="page-redemption">
-  <div class="section-header">
-    <div class="section-title">פדיון</div>
-    <button class="btn btn-primary" onclick="openModal('modal-redeem')">+ פדיון חדש</button>
+  <!-- MISC / TOSFOT -->
+  <div class="page" id="page-misc">
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--er)"></div>תוספות – חלוקה ישירה 100%</div>
+      <div class="section-header" style="margin-bottom:12px"><div></div><button class="btn-primary" onclick="openAddNosefModal()">+ הוסף</button></div>
+      <div class="summary-bar" id="tosfot-summary-bar"></div>
+      <div style="margin-bottom:10px">
+        <button onclick="toggleCatPanel('nosef2')" class="gbtn" id="nosef2-cat-toggle-btn">🏷️ סינון קטגוריה</button>
+      </div>
+      <div id="nosef2-cat-panel" style="display:none;margin-bottom:10px">
+        <div id="nosef2-cat-buttons" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--sf2);border-radius:var(--rs);border:1px solid var(--bd)"></div>
+      </div>
+      <div class="tw"><table><thead id="tosfot-thead"><tr><th>קטגוריה</th><th>תאריך</th><th>סכום</th><th>מקבלים</th><th></th></tr></thead><tbody id="tosfot-tbody"></tbody></table></div>
+    </div>
   </div>
-  <div class="table-wrap table-scroll">
-    <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="redeem-tbody"></tbody></table>
-  </div>
-</div>
 
-<!-- DONATIONS -->
-<div class="page" id="page-donations">
-  <div class="section-header">
-    <div class="section-title">הנצחה ותרומות</div>
-    <button class="btn btn-primary" onclick="openModal('modal-donation')">+ תרומה חדשה</button>
+  <!-- PERSONS -->
+  <div class="page" id="page-persons">
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--ac)"></div>ניהול אנשים</div>
+      <div class="section-header" style="margin-bottom:12px"><div></div><button class="btn-primary" onclick="openPersonModal()">+ הוסף אדם</button></div>
+      <div id="persons-list"></div>
+    </div>
   </div>
-  <div id="donation-calc" style="margin-bottom:20px"></div>
-  <div class="table-wrap table-scroll">
-    <table><thead><tr><th>#</th><th>שם</th><th>תאריך</th><th>סכום</th><th>סיבה</th><th></th></tr></thead><tbody id="donation-tbody"></tbody></table>
-  </div>
-</div>
 
-<!-- MISC / TOSFOT -->
-<div class="page" id="page-misc">
-  <div class="section-header">
-    <div class="section-title">תוספות – חלוקה ישירה 100%</div>
-    <button class="btn btn-primary" onclick="openAddNosefModal()">+ הוסף</button>
+  <!-- BACKUP -->
+  <div class="page" id="page-backup">
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--ac2)"></div>☁️ גיבוי ענן</div>
+      <div id="backup-gd-status" style="font-size:.85rem;color:var(--tx3);margin-bottom:12px;line-height:1.6;">☁️ לא מחובר</div>
+      <button id="backup-gd-btn" onclick="gdLogin()" style="width:100%;background:var(--ac2);color:#fff;border:none;border-radius:var(--rs);padding:11px 20px;font-size:.88rem;cursor:pointer;font-family:var(--fn);font-weight:700;margin-bottom:8px;">התחבר ל-Google</button>
+      <button id="backup-now-btn" class="gbtn g" onclick="gdSaveNow()" style="width:100%;justify-content:center;display:none;">📦 שמור גיבוי עכשיו</button>
+    </div>
+    <div class="card">
+      <div class="ct"><div class="ctb" style="background:var(--er)"></div>🗂️ ניהול נתונים</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button onclick="exportData()" class="gbtn g" style="width:100%;justify-content:center;">📤 ייצוא נתונים (JSON)</button>
+        <button onclick="document.getElementById('import-file').click()" class="gbtn" style="width:100%;justify-content:center;color:var(--ac2);border-color:rgba(59,130,246,.4);">📥 ייבוא נתונים (JSON)</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+        <button onclick="hardReset()" class="gbtn d" style="width:100%;justify-content:center;">🗑️ מחיקת כל הנתונים</button>
+      </div>
+    </div>
+    <div class="card" id="backup-pwa-card">
+      <div class="ct"><div class="ctb" style="background:var(--ac)"></div>📲 התקנת אפליקציה</div>
+      <button id="pwa-install-btn" onclick="pwaInstall()" style="display:none;width:100%;background:rgba(201,168,76,.12);color:var(--ac);border:1px solid var(--ac);border-radius:var(--rs);padding:11px 20px;font-size:.88rem;cursor:pointer;font-family:var(--fn);font-weight:700;">📲 התקן כאפליקציה</button>
+      <div style="font-size:.8rem;color:var(--tx3);line-height:1.6;">התקן את האפליקציה על המכשיר שלך לגישה מהירה ושימוש ללא אינטרנט.</div>
+    </div>
   </div>
-  <div class="summary-bar" id="tosfot-summary-bar"></div>
-  <div style="margin-bottom:10px">
-    <button onclick="toggleCatPanel('nosef2')" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer" id="nosef2-cat-toggle-btn">🏷️ סינון קטגוריה</button>
-  </div>
-  <div id="nosef2-cat-panel" style="display:none;margin-bottom:10px">
-    <div id="nosef2-cat-buttons" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)"></div>
-  </div>
-  <div class="table-wrap table-scroll">
-    <table><thead id="tosfot-thead"><tr><th>קטגוריה</th><th>תאריך</th><th>סכום</th><th>מקבלים</th><th></th></tr></thead><tbody id="tosfot-tbody"></tbody></table>
-  </div>
-</div>
 
-<!-- PERSONS -->
-<div class="page" id="page-persons">
-  <div class="section-header">
-    <div class="section-title">ניהול אנשים</div>
-    <button class="btn btn-primary" onclick="openPersonModal()">+ הוסף אדם</button>
-  </div>
-  <div class="persons-list" id="persons-list"></div>
-</div>
-</main>
+  </div><!-- /wrap -->
 
+  <!-- ══ BOTTOM NAV ══ -->
+  <div class="bnav">
+    <button class="bnav-btn active" id="bnavMenu" onclick="openMenuDrawer()">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      תפריט
+    </button>
+    <button class="bnav-plus" onclick="openAddIncomeModal()" title="הוסף הכנסה">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="bnav-btn" id="bnavSettings" onclick="openSettingsDrawer()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      הגדרות
+    </button>
+  </div>
+
+  <!-- ══ MENU DRAWER ══ -->
+  <div class="menu-drawer" id="menuDrawer">
+    <div class="menu-overlay" onclick="closeMenuDrawer()"></div>
+    <div class="menu-panel">
+      <div class="menu-title">ניווט</div>
+      <div class="menu-grid">
+        <button class="menu-item active-tab" id="menuitem-dashboard" onclick="showPageMobile('dashboard')"><span class="menu-item-icon">📊</span>דשבורד</button>
+        <button class="menu-item" id="menuitem-income" onclick="showPageMobile('income')"><span class="menu-item-icon">💰</span>הכנסות</button>
+        <button class="menu-item" id="menuitem-tithe" onclick="showPageMobile('tithe')"><span class="menu-item-icon">✡️</span>מעשרות</button>
+        <button class="menu-item" id="menuitem-loans" onclick="showPageMobile('loans')"><span class="menu-item-icon">📋</span>הלוואות</button>
+        <button class="menu-item" id="menuitem-redemption" onclick="showPageMobile('redemption')"><span class="menu-item-icon">🔓</span>פדיון</button>
+        <button class="menu-item" id="menuitem-donations" onclick="showPageMobile('donations')"><span class="menu-item-icon">🕍</span>הנצחה</button>
+        <button class="menu-item" id="menuitem-misc" onclick="showPageMobile('misc')"><span class="menu-item-icon">💸</span>תוספות</button>
+        <button class="menu-item" id="menuitem-persons" onclick="showPageMobile('persons')"><span class="menu-item-icon">👥</span>אנשים</button>
+        <button class="menu-item" id="menuitem-backup" onclick="showPageMobile('backup')"><span class="menu-item-icon">📦</span>גיבויים</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS DRAWER ══ -->
+  <div class="settings-drawer" id="settingsDrawer">
+    <div class="menu-overlay" onclick="closeSettingsDrawer()"></div>
+    <div class="settings-panel">
+      <div class="settings-title">⚙️ הגדרות</div>
+      <div style="font-size:.78rem;color:var(--tx2);margin-bottom:8px;font-weight:600;">מצב תצוגה</div>
+      <div class="theme-row">
+        <button class="theme-opt" id="theme-light" onclick="setTheme('light')">☀️ בהיר</button>
+        <button class="theme-opt active" id="theme-dark" onclick="setTheme('dark')">🌙 כהה</button>
+      </div>
+      <div style="margin-top:14px;border-top:1px solid var(--bd);padding-top:14px;">
+        <div style="font-size:.78rem;color:var(--tx2);margin-bottom:8px;font-weight:600;">☁️ גיבוי ענן</div>
+        <div id="gd-status" style="font-size:.8rem;color:var(--tx3);margin-bottom:10px;">☁️ לא מחובר</div>
+        <span id="gd-user" style="font-size:.72rem;color:var(--ok);display:none;margin-bottom:8px;display:block"></span>
+        <button id="gd-btn" onclick="gdLogin()" style="width:100%;background:var(--ac2);color:#fff;border:none;border-radius:var(--rs);padding:10px 14px;font-size:.85rem;cursor:pointer;font-family:var(--fn);font-weight:700;">☁️ חיבור Google Drive</button>
+      </div>
+      <div style="margin-top:14px;border-top:1px solid var(--bd);padding-top:14px;">
+        <div style="font-size:.78rem;color:var(--tx2);margin-bottom:8px;font-weight:600;">הגדרות מעשרות</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.85rem;">
+          <span>מעשרות:</span>
+          <input type="number" id="titheRate" value="20" min="1" max="100" onchange="syncSettings('titheRate')" style="width:56px;font-size:.88rem;padding:5px 6px;text-align:center;">
+          <span>%</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.85rem;">
+          <span>תרומה:</span>
+          <input type="number" id="donationRate" value="50" min="0" max="100" onchange="syncSettings('donationRate')" style="width:50px;font-size:.88rem;padding:5px 6px;text-align:center;">
+          <span>% +</span>
+          <input type="number" id="donationPeriodRate" value="50" min="0" max="100" onchange="syncSettings('donationPeriodRate')" style="width:50px;font-size:.88rem;padding:5px 6px;text-align:center;">
+          <span>%</span>
+        </div>
+        <!-- hidden desktop duplicates (keep IDs for JS) -->
+        <input type="number" id="titheRateD" value="20" style="display:none" onchange="syncSettings('titheRateD')">
+        <input type="number" id="donationRateD" value="50" style="display:none" onchange="syncSettings('donationRateD')">
+        <input type="number" id="donationPeriodRateD" value="50" style="display:none" onchange="syncSettings('donationPeriodRateD')">
+      </div>
+      <div style="margin-top:14px;border-top:1px solid var(--bd);padding-top:14px;">
+        <div style="font-size:.78rem;color:var(--tx2);margin-bottom:8px;font-weight:600;">📦 גיבוי ונתונים</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button onclick="exportData()" class="gbtn g" style="width:100%;justify-content:center;">📤 ייצוא JSON</button>
+          <button onclick="document.getElementById('import-file').click()" class="gbtn" style="width:100%;justify-content:center;color:var(--ac2);border-color:rgba(59,130,246,.4);">📥 ייבוא JSON</button>
+          <button onclick="hardReset()" class="gbtn d" style="width:100%;justify-content:center;">🗑️ מחיקת כל הנתונים</button>
+        </div>
+      </div>
+    </div>
+  </div>
 <!-- ADD INCOME QUICK MODAL -->
 <div class="modal-overlay" id="modal-add-income">
   <div class="modal">
@@ -1386,7 +1054,8 @@ function importData(event) {
   reader.onload = e => {
     try {
       const imported = JSON.parse(e.target.result);
-      if (!imported.salaries) { alert('קובץ לא תקין'); return; }
+      if (!imported.persons && !imported.shonot && !imported.titheRate && !imported._sv) { alert('קובץ לא תקין'); return; }
+      if (!imported.salaries) imported.salaries = {};
       if (!confirm('לייבא נתונים? זה יחליף את כל הנתונים הנוכחיים.')) return;
       localStorage.setItem('karenSiua', JSON.stringify(imported));
       location.reload();
@@ -1396,20 +1065,15 @@ function importData(event) {
   event.target.value = '';
 }
 function setTheme(mode) {
-  const on='padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--gold);color:#111';
-  const off='padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--muted)';
-  const dk=document.getElementById('theme-dark'), lt=document.getElementById('theme-light');
-  if (!dk||!lt) return;
-  if (mode==='light') {
-    document.body.classList.add('light-mode');
-    lt.style.cssText=on; dk.style.cssText=off;
-  } else {
-    document.body.classList.remove('light-mode');
-    dk.style.cssText=on; lt.style.cssText=off;
-  }
-  state.theme=mode; save();
-  const _ap=document.querySelector('.page.active');
-  if(_ap) renderPage(_ap.id.replace('page-',''));
+  if (mode==='light') { document.body.classList.add('light'); document.body.classList.remove('dark'); }
+  else { document.body.classList.remove('light'); document.body.classList.add('dark'); }
+  const lBtn = document.getElementById('theme-light');
+  const dBtn = document.getElementById('theme-dark');
+  if (lBtn) lBtn.classList.toggle('active', mode==='light');
+  if (dBtn) dBtn.classList.toggle('active', mode!=='light');
+  state.theme = mode; save();
+  const ap = document.querySelector('.page.active');
+  if (ap) renderPage(ap.id.replace('page-',''));
 }
 function syncSettings(fromId) {
   const map = {
@@ -2805,19 +2469,24 @@ async function gdSave() {
   if (gdDirty) gdSave();
 }
 
+function gdApplyData(d) {
+  if (!d || typeof d !== 'object' || !d._sv) return false;
+  state = d;
+  localStorage.setItem('karenSiua', JSON.stringify(state));
+  return true;
+}
 async function gdLoad() {
   if (!gdToken || !gdFileId) return false;
   try {
-    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${gdFileId}?alt=media`, { headers: { 'Authorization': 'Bearer ' + gdToken } });
+    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${gdFileId}?alt=media`, {
+      headers: {'Authorization': 'Bearer ' + gdToken}
+    });
     if (!r.ok) return false;
     const d = await r.json();
-    if (d && d._sv) {
-      state = d;
-      localStorage.setItem('karenSiua', JSON.stringify(state));
-      return true;
-    }
-  } catch(e) {}
-  return false;
+    if (!gdApplyData(d)) return false;
+    renderAll();
+    return true;
+  } catch(e) { console.error('gdLoad', e); return false; }
 }
 
 async function gdSync() {
@@ -2902,7 +2571,7 @@ document.addEventListener('DOMContentLoaded', function() {
   ['donationPeriodRate','donationPeriodRateD'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=state.donationPeriodRate; });
   loadGroupState();
   setNav('dashboard');
-  if(state.theme==='light') setTheme('light');
+  if(state.theme) setTheme(state.theme); else setTheme('dark');
   renderDashboard();
   // restore GD user if was logged in
   const _gdUser = localStorage.getItem('ks_gd_user');
@@ -2910,26 +2579,142 @@ document.addEventListener('DOMContentLoaded', function() {
   renderGdUI();
 });
 </script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // Works for both root and subpath (GitHub Pages)
-    const swPath = location.pathname.endsWith('/') 
-      ? location.pathname + 'sw.js'
-      : location.pathname.split('/').slice(0,-1).join('/') + '/sw.js';
-    navigator.serviceWorker.register(swPath, { scope: location.pathname.split('/').slice(0,-1).join('/') + '/' })
-      .then(r => {
-        console.log('SW registered:', r.scope);
-        // Show install button if prompt was already received
-        if (deferredInstallPrompt) {
-          const btn = document.getElementById('pwa-install-btn');
-          if (btn) btn.style.display = '';
-        }
-      })
-      .catch(e => console.log('SW failed:', e));
-  });
-}
 </script>
+
+  <script>
+  // ══ NEW NAVIGATION ══
+  function openMenuDrawer() {
+    document.getElementById('menuDrawer').classList.add('open');
+    document.getElementById('bnavMenu').classList.add('active');
+  }
+  function closeMenuDrawer() {
+    document.getElementById('menuDrawer').classList.remove('open');
+    document.getElementById('bnavMenu').classList.remove('active');
+  }
+  function openSettingsDrawer() {
+    document.getElementById('settingsDrawer').classList.add('open');
+    document.getElementById('bnavSettings').classList.add('active');
+  }
+  function closeSettingsDrawer() {
+    document.getElementById('settingsDrawer').classList.remove('open');
+    document.getElementById('bnavSettings').classList.remove('active');
+  }
+  function showPageMobile(id) {
+    closeMenuDrawer();
+    showPage(id);
+  }
+
+  // Override old nav functions
+  function toggleSettings() { openSettingsDrawer(); }
+  function toggleMainMenu() { openMenuDrawer(); }
+  function closeMainMenu() { closeMenuDrawer(); }
+  function closeSettings() { closeSettingsDrawer(); }
+  function toggleMore() { openMenuDrawer(); }
+  function closeMore() { closeMenuDrawer(); }
+
+  // Override setNav to use new tile IDs + header tabs
+  var _origSetNav = window.setNav;
+  function setNav(id) {
+    // Menu tiles
+    document.querySelectorAll('.menu-item').forEach(function(m) { m.classList.remove('active-tab'); });
+    var tile = document.getElementById('menuitem-' + id);
+    if (tile) tile.classList.add('active-tab');
+    // Header tabs
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    var htab = document.getElementById('tab-' + id);
+    if (htab) htab.classList.add('active');
+  }
+
+  // Override showPage to also sync tabs
+  var _origShowPage = window.showPage;
+  window.showPage = function(id, tabEl) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    var pg = document.getElementById('page-' + id);
+    if (pg) pg.classList.add('active');
+    setNav(id);
+    closeMainMenu();
+    closeSettings();
+    renderPage(id);
+    window.scrollTo(0, 0);
+  };
+
+  // Override renderGdUI — updates ALL GD elements
+  var _origRenderGdUI = window.renderGdUI;
+  window.renderGdUI = function() {
+    // Drawer GD button
+    var btn = document.getElementById('gd-btn');
+    var user = document.getElementById('gd-user');
+    var status = document.getElementById('gd-status');
+    var backupBtn = document.getElementById('backup-now-btn');
+    var backupGdBtn = document.getElementById('backup-gd-btn');
+    var backupGdStatus = document.getElementById('backup-gd-status');
+    var hdrStatus = document.getElementById('gd-status-hdr');
+
+    if (typeof gdToken !== 'undefined' && gdToken) {
+      if (btn) { btn.textContent = 'התנתק מ-Google'; btn.style.background = 'rgba(239,68,68,.15)'; btn.style.color = 'var(--er)'; btn.style.border = '1px solid var(--er)'; btn.onclick = gdLogout; }
+      if (user) { user.style.display = ''; }
+      if (status) { /* updated by gdSetStatus */ }
+      if (backupBtn) backupBtn.style.display = '';
+      if (backupGdBtn) { backupGdBtn.textContent = 'התנתק מ-Google'; backupGdBtn.style.background = 'rgba(239,68,68,.15)'; backupGdBtn.style.color = 'var(--er)'; backupGdBtn.style.border = '1px solid var(--er)'; backupGdBtn.onclick = gdLogout; }
+      if (hdrStatus) hdrStatus.innerHTML = '<div style="font-size:.65rem;color:var(--ok);font-weight:700;">✅ מחובר</div>';
+    } else {
+      if (btn) { btn.textContent = '☁️ חיבור Google Drive'; btn.style.background = 'var(--ac2)'; btn.style.color = '#fff'; btn.style.border = 'none'; btn.onclick = gdLogin; }
+      if (user) user.style.display = 'none';
+      if (backupBtn) backupBtn.style.display = 'none';
+      if (backupGdBtn) { backupGdBtn.textContent = 'התחבר ל-Google'; backupGdBtn.style.background = 'var(--ac2)'; backupGdBtn.style.color = '#fff'; backupGdBtn.style.border = 'none'; backupGdBtn.onclick = gdLogin; }
+      if (hdrStatus) hdrStatus.innerHTML = '<div style="font-size:.65rem;color:var(--tx3);">☁️ לא מחובר</div>';
+      if (backupGdStatus) backupGdStatus.textContent = '☁️ לא מחובר';
+    }
+  };
+
+  // Override gdSetStatus to update all status elements
+  var _origGdSetStatus = window.gdSetStatus;
+  window.gdSetStatus = function(txt, color) {
+    var els = [document.getElementById('gd-status'), document.getElementById('backup-gd-status')];
+    els.forEach(function(s) { if (s) { s.textContent = txt; s.style.color = color || 'var(--tx3)'; } });
+    var hdr = document.getElementById('gd-status-hdr');
+    if (hdr && typeof gdToken !== 'undefined' && gdToken) {
+      hdr.innerHTML = '<div style="font-size:.6rem;font-weight:700;color:' + (color || 'var(--ac)') + '">' + txt + '</div>';
+    }
+  };
+
+  // gdSaveNow wrapper
+  function gdSaveNow() {
+    if (typeof gdSave === 'function') gdSave();
+  }
+
+  // Override setTheme to update new theme buttons
+  var _origSetTheme = window.setTheme;
+  window.setTheme = function(mode) {
+    if (typeof _origSetTheme === 'function') _origSetTheme(mode);
+    var light = document.getElementById('theme-light');
+    var dark = document.getElementById('theme-dark');
+    if (light && dark) {
+      light.classList.toggle('active', mode === 'light');
+      dark.classList.toggle('active', mode === 'dark');
+    }
+  };
+
+  // KPI render override — use new kpi-card classes
+  var _kpiRendered = false;
+  </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      var base = location.pathname.endsWith('/')
+        ? location.pathname
+        : location.pathname.split('/').slice(0,-1).join('/') + '/';
+      navigator.serviceWorker.register(base + 'sw.js', { scope: base })
+        .then(function() {
+          if (typeof deferredInstallPrompt !== 'undefined' && deferredInstallPrompt) {
+            var btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.style.display = '';
+          }
+        })
+        .catch(function() {});
+    });
+  }
+  </script>
 <!-- ══ DIAGNOSTICS PANEL ══ -->
 <div id="diag-fab" onclick="diagToggle()" style="position:fixed;bottom:80px;left:12px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e05260;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.5);border:none;font-weight:700;">🔍</div>
 <div id="diag-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#0a0e14;border-top:2px solid #e05260;max-height:65vh;overflow-y:auto;padding:12px;font-family:monospace;font-size:11px;color:#e2eaf4;">
@@ -3072,6 +2857,5 @@ window.addEventListener('beforeinstallprompt', (e) => {
   }
 }, true); // capture phase so it runs before other listeners
 </script>
-
 </body>
 </html>
