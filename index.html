@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>קרן סיוע</title>
@@ -20,42 +21,22 @@
 <meta name="theme-color" content="#c9a84c">
 <script>
 (function(){
-  function makeIcon(size) {
-    var c = document.createElement("canvas");
-    c.width = c.height = size;
-    var x = c.getContext("2d");
-    x.fillStyle = "#0f1117";
-    x.fillRect(0, 0, size, size);
-    x.fillStyle = "#c9a84c";
-    x.beginPath();
-    x.arc(size/2, size/2, size*0.46, 0, Math.PI*2);
-    x.fill();
-    x.fillStyle = "#0f1117";
-    x.font = "bold " + Math.round(size*0.38) + "px serif";
-    x.textAlign = "center";
-    x.textBaseline = "middle";
-    x.fillText("קס", size/2, size*0.52);
-    return c.toDataURL("image/png");
-  }
-  var base = location.pathname.endsWith("/")
-    ? location.pathname
-    : location.pathname.split("/").slice(0,-1).join("/") + "/";
   // Inline manifest — works on ANY domain without external manifest.json file
   const manifest = {
     name: 'קרן סיוע',
     short_name: 'קרן סיוע',
     description: 'מערכת ניהול קרן סיוע',
-    start_url: base,
-    scope: base,
+    start_url: location.pathname + location.search,
+    scope: location.pathname,
     display: 'standalone',
-    background_color: '#0f1117',
+    background_color: '#0a0e14',
     theme_color: '#c9a84c',
     dir: 'rtl',
     lang: 'he',
     orientation: 'portrait',
     icons: [
-      { src: makeIcon(192), sizes: '192x192', type: 'image/png' },
-      { src: makeIcon(512), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
     ]
   };
   const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
@@ -64,8 +45,258 @@
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&family=Frank+Ruhl+Libre:wght@300;400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
+:root {
+  --bg:#0a0e14; --surface:#131820; --surface2:#1c2330; --surface3:#242d3b;
+  --border:#2a3547; --gold:#c9a84c; --gold2:#e8c97a; --teal:#2ec4b6;
+  --red:#ef4444; --green:#22c55e; --blue:#3b82f6; --purple:#7c5cbf;
+  --text:#e2eaf4; --muted:#8899b0; --radius:14px; --nav-h:64px; --header-h:56px;
+}
+body.light-mode {
+  --bg:#f0f4f8; --surface:#fff; --surface2:#e8eef5; --surface3:#dde5ee; --border:#c8d5e3;
+  --text:#1a2332; --muted:#4a5e74; --gold2:#8a6010;
+  --teal:#1a9e96; --red:#dc2626; --green:#16a34a; --blue:#2563eb; --purple:#5c3ea0;
+}
+body.light-mode { background:var(--bg)!important; color:var(--text)!important; }
+body.light-mode header { background:linear-gradient(160deg,#e8eef5,#f0f4f8)!important; border-bottom-color:var(--border)!important; }
+body.light-mode main { background:var(--bg)!important; }
+body.light-mode .kpi,body.light-mode .chart-box,body.light-mode .person-card,
+body.light-mode .person-item,body.light-mode .table-wrap,body.light-mode .tithe-card,
+body.light-mode .modal,body.light-mode .bottom-nav,body.light-mode .main-menu-panel,
+body.light-mode .settings-drawer,body.light-mode .summary-bar {
+  background:var(--surface)!important; border-color:var(--border)!important; }
+body.light-mode th { background:var(--surface2)!important; color:var(--muted)!important; }
+body.light-mode td { color:var(--text)!important; background:var(--surface)!important; }
+body.light-mode tr:nth-child(even) td { background:#f5f7fc!important; }
+body.light-mode .logo { color:var(--gold2)!important; -webkit-text-fill-color:var(--gold2)!important; }
+body.light-mode .logo small { color:var(--muted)!important; -webkit-text-fill-color:var(--muted)!important; }
+body.light-mode .nav-item.active { color:var(--gold2)!important; }
+body.light-mode .main-menu-item { color:var(--text)!important; }
+body.light-mode .main-menu-item.active { color:var(--gold2)!important; }
+body.light-mode .sub-tab { color:var(--muted)!important; border-color:var(--border)!important; background:var(--surface2)!important; }
+body.light-mode .sub-tab.active { background:var(--gold)!important; color:#111!important; }
+body.light-mode .form-group input,body.light-mode .form-group select,body.light-mode .form-group textarea {
+  background:var(--surface2)!important; color:var(--text)!important; border-color:var(--border)!important; }
+body.light-mode .btn-secondary { background:var(--surface2)!important; color:var(--text)!important; border-color:var(--border)!important; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;overflow-x:hidden;font-size:15px;}
+header{
+  background:linear-gradient(160deg,#131820 0%,#0d1119 60%,#0a0e14 100%);
+  border-bottom:1px solid var(--border);padding:0 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:var(--header-h);position:fixed;top:0;left:0;right:0;z-index:200;
+  box-shadow:0 2px 24px rgba(0,0,0,.5);
+}
+.logo{font-family:'Frank Ruhl Libre',serif;font-size:21px;font-weight:700;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo small{-webkit-text-fill-color:var(--muted);color:var(--muted);font-size:11px;
+  font-family:'Heebo',sans-serif;font-weight:300;display:block;line-height:1;}
+.settings-btn{width:38px;height:38px;border-radius:10px;background:var(--surface);
+  border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:18px;transition:all .15s;}
+.settings-btn:hover,.settings-btn.open{color:var(--gold2);border-color:var(--gold);}
+.settings-drawer{position:fixed;bottom:var(--nav-h);left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:14px 16px 20px;
+  z-index:195;transform:translateY(110%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+  box-shadow:0 -8px 40px rgba(0,0,0,.55);}
+.settings-drawer.open{transform:translateY(0);}
+.sd-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px;}
+.settings-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);flex-wrap:wrap;}
+.settings-row+.settings-row{margin-top:10px;}
+.settings-row span{min-width:80px;}
+.settings-row input[type=number]{width:56px;background:var(--surface2);border:1px solid var(--gold);
+  border-radius:8px;color:var(--gold2);font-family:'Heebo',sans-serif;font-size:15px;font-weight:700;
+  text-align:center;padding:5px 4px;outline:none;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);
+  border-top:1px solid var(--border);display:flex;align-items:stretch;z-index:200;
+  padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -4px 24px rgba(0,0,0,.35);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:500;
+  transition:color .15s;padding:8px 2px;border:none;background:none;position:relative;}
+.nav-item .nav-icon{font-size:22px;line-height:1;}
+.nav-item.active{color:var(--gold2);}
+.nav-item.active::before{content:'';position:absolute;top:0;left:15%;right:15%;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:0 0 3px 3px;}
+.nav-fab{width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111;font-size:30px;
+  font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(201,168,76,.45);margin-bottom:14px;flex-shrink:0;
+  transition:transform .15s,box-shadow .15s;line-height:1;}
+.nav-fab:active{transform:scale(.91);box-shadow:0 2px 10px rgba(201,168,76,.25);}
+.main-menu-panel{position:fixed;bottom:var(--nav-h);left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);z-index:190;transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 40px rgba(0,0,0,.6);
+  border-radius:20px 20px 0 0;padding:8px 0 8px;max-height:72vh;overflow-y:auto;}
+.main-menu-panel.open{transform:translateY(0);}
+.main-menu-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:1.5px;padding:4px 20px 10px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.main-menu-item{display:flex;align-items:center;gap:14px;padding:13px 20px;cursor:pointer;
+  font-size:15px;font-weight:500;color:var(--text);transition:background .12s;}
+.main-menu-item span{font-size:22px;}
+.main-menu-item:active{background:rgba(255,255,255,.04);}
+.main-menu-item.active{color:var(--gold2);background:rgba(201,168,76,.08);border-right:3px solid var(--gold);}
+#nav-settings-btn.active{color:var(--gold2);}
+.nav-more-panel{position:fixed;bottom:var(--nav-h);left:0;right:0;background:var(--surface2);
+  border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);
+  z-index:190;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+  box-shadow:0 -8px 30px rgba(0,0,0,.5);}
+.nav-more-panel.open{transform:translateY(0);}
+.nav-more-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:16px 8px;cursor:pointer;font-size:11px;color:var(--muted);
+  border-right:1px solid var(--border);transition:all .15s;}
+.nav-more-item:last-child{border-right:none;}
+.nav-more-item .nav-icon{font-size:22px;}
+.nav-more-item.active{color:var(--gold2);background:rgba(201,168,76,.08);}
+.more-overlay{display:none;position:fixed;inset:0;z-index:185;}
+.more-overlay.open{display:block;}
+main{padding:12px 12px calc(var(--nav-h) + 24px);margin-top:var(--header-h);
+  overflow-y:auto;min-height:calc(100vh - var(--header-h));}
+.page{display:none;} .page.active{display:block;}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 12px 12px;position:relative;overflow:hidden;}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  border-radius:0 0 var(--radius) var(--radius);}
+.kpi.gold::after{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.kpi.teal::after{background:var(--teal);} .kpi.red::after{background:var(--red);}
+.kpi.green::after{background:var(--green);} .kpi.blue::after{background:var(--blue);}
+.kpi.purple::after{background:var(--purple);}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500;}
+.kpi-value{font-size:20px;font-weight:800;line-height:1;}
+.kpi.gold .kpi-value{color:var(--gold2);} .kpi.teal .kpi-value{color:var(--teal);}
+.kpi.red .kpi-value{color:var(--red);} .kpi.green .kpi-value{color:var(--green);}
+.kpi.blue .kpi-value{color:var(--blue);} .kpi.purple .kpi-value{color:var(--purple);}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+.charts-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.chart-title{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px;}
+.chart-box canvas{max-height:200px;}
+.persons-grid{display:flex;flex-direction:column;gap:10px;}
+.person-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.person-name{font-size:16px;font-weight:700;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:8px;}
+.person-name .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.person-rows{display:flex;flex-direction:column;gap:7px;}
+.person-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;}
+.person-row .label{color:var(--muted);} .person-row .val{font-weight:700;}
+.person-row .val.pos{color:var(--green);} .person-row .val.neg{color:var(--red);}
+.person-row .val.gold{color:var(--gold2);}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.section-title{font-family:'Frank Ruhl Libre',serif;font-size:18px;font-weight:700;color:var(--gold2);}
+.btn{padding:10px 18px;border-radius:10px;font-family:'Heebo',sans-serif;font-size:14px;
+  font-weight:600;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111;}
+.btn-primary:active{transform:scale(.97);}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);font-size:12px;padding:5px 10px;border-radius:7px;}
+.btn-danger:active{background:var(--red);color:#fff;}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.3px;padding:5px 6px;text-align:right;white-space:nowrap;}
+td{padding:5px 6px;font-size:12px;border-top:1px solid var(--border);}
+tr:active td{background:rgba(255,255,255,.03);}
+.act-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+  border-radius:6px;font-size:13px;border:none;cursor:pointer;background:transparent;margin-left:2px;vertical-align:middle;}
+.act-edit{color:var(--teal);border:1px solid var(--teal);}
+.act-edit:active{background:var(--teal);color:#111;}
+.act-del{color:var(--red);border:1px solid var(--red);}
+.act-del:active{background:var(--red);color:#fff;}
+.card-list{display:flex;flex-direction:column;gap:8px;}
+.record-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.record-card-main{flex:1;min-width:0;}
+.record-card-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.record-card-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.record-card-amount{font-size:16px;font-weight:800;white-space:nowrap;}
+.record-card-actions{display:flex;align-items:center;gap:6px;}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-green{background:rgba(34,197,94,.15);color:var(--green);}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red);}
+.badge-gold{background:rgba(201,168,76,.15);color:var(--gold2);}
+.badge-blue{background:rgba(59,130,246,.15);color:var(--blue);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
+  z-index:500;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:22px 22px 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));width:100%;
+  max-height:92vh;overflow-y:auto;animation:slideUp .25s cubic-bezier(.32,.72,0,1);}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-family:'Frank Ruhl Libre',serif;font-size:19px;font-weight:700;color:var(--gold2);margin-bottom:18px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500;}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Heebo',sans-serif;font-size:16px;padding:11px 13px;
+  outline:none;transition:border-color .15s;-webkit-appearance:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);}
+.form-group input[type=checkbox]{width:20px;height:20px;min-width:20px;background:var(--surface2);
+  border:2px solid var(--gold);border-radius:5px;cursor:pointer;accent-color:var(--gold);padding:0;flex-shrink:0;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-actions{display:flex;gap:10px;margin-top:18px;}
+.modal-actions .btn{flex:1;justify-content:center;padding:13px;font-size:15px;}
+.sub-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+.sub-tabs::-webkit-scrollbar{display:none;}
+.sub-tab{padding:7px 15px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;
+  color:var(--muted);border:1px solid var(--border);transition:all .15s;white-space:nowrap;}
+.sub-tab.active{background:var(--gold);color:#111;border-color:var(--gold);font-weight:700;}
+.summary-bar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;}
+.summary-item .s-label{color:var(--muted);margin-left:4px;}
+.summary-item .s-val{font-weight:700;}
+.summary-item .s-val.gold{color:var(--gold2);} .summary-item .s-val.green{color:var(--green);}
+.summary-item .s-val.red{color:var(--red);}
+.sg-cell{padding:7px 8px;font-size:12px;border:1px solid var(--border);text-align:center;white-space:nowrap;}
+.sg-cell:first-child{text-align:right;font-weight:600;}
+.sg-head{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:600;}
+.sg-total{font-weight:700;color:var(--gold2);background:rgba(201,168,76,.07);}
+.sg-edit{cursor:pointer;} .sg-edit:active{background:rgba(255,255,255,.06);}
+.persons-list{display:flex;flex-direction:column;gap:8px;}
+.person-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.person-item-name{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;}
+.person-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.person-item-badges{display:flex;gap:5px;flex-wrap:wrap;}
+.person-item-actions{display:flex;gap:6px;flex-shrink:0;}
+.tithe-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.tithe-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 12px;}
+.tithe-card-title{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.tithe-amount{font-size:22px;font-weight:800;color:var(--gold2);}
+.tithe-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.empty{text-align:center;color:var(--muted);padding:36px 20px;font-size:14px;}
+@media(min-width:600px){
+  main{padding:16px;}
+  .kpi-grid{grid-template-columns:repeat(3,1fr);}
+  .charts-grid{display:grid;grid-template-columns:2fr 1fr;}
+  .persons-grid{display:grid;grid-template-columns:repeat(2,1fr);}
+  .tithe-breakdown{grid-template-columns:repeat(4,1fr);}
+  .chart-box canvas{max-height:240px;}
+  .bottom-nav{display:none;}
+  .desktop-tabs{display:flex!important;gap:2px;padding:14px 16px 0;border-bottom:1px solid var(--border);
+    background:var(--surface);overflow-x:auto;position:sticky;top:var(--header-h);z-index:150;}
+  .desktop-tab{padding:9px 16px;border-radius:9px 9px 0 0;cursor:pointer;font-size:13px;font-weight:500;
+    color:var(--muted);border:1px solid transparent;border-bottom:none;white-space:nowrap;transition:all .15s;}
+  .desktop-tab:hover{color:var(--text);background:var(--surface2);}
+  .desktop-tab.active{color:var(--gold2);background:var(--bg);border-color:var(--border);border-bottom-color:var(--bg);margin-bottom:-1px;}
+  .modal{border-radius:16px;max-width:480px;margin:auto;}
+  .modal-overlay{align-items:center;}
+  main{margin-bottom:0;}
+  .settings-drawer{display:none;}
+  header .settings-btn{display:none;}
+  .header-settings-inline{display:flex!important;}
+}
+.desktop-tabs{display:none;}
+.header-settings-inline{display:none;align-items:center;gap:10px;font-size:12px;color:var(--muted);}
+.header-settings-inline input[type=number]{width:46px;background:var(--surface2);border:1px solid var(--gold);
+  border-radius:6px;color:var(--gold2);font-size:13px;font-weight:700;text-align:center;
+  padding:3px 4px;outline:none;font-family:'Heebo',sans-serif;}
+</style>
+
+<style>
+
   :root{
     --bg:#0a0e14;--sf:#131820;--sf2:#1c2330;--sf3:#242d3b;
     --bd:#2a3547;--ac:#c9a84c;--ac2:#3b82f6;--ac3:#f59e0b;
@@ -289,7 +520,19 @@
   .toast.e{border-color:var(--er);color:var(--er);}
   .lrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .divl{height:1px;background:var(--bd);margin:12px 0;}
-  </style>
+  
+
+body.light-mode *{border-color:var(--border) !important;}
+body.light-mode .card,body.light-mode [class*="card"],
+body.light-mode .drawer,body.light-mode [class*="drawer"],
+body.light-mode .modal,body.light-mode .bottom-nav,
+body.light-mode header,body.light-mode nav{background:var(--surface) !important;}
+body.light-mode th{background:var(--surface2) !important;}
+body.light-mode td{background:var(--surface) !important;color:var(--text) !important;}
+body.light-mode input,body.light-mode select,body.light-mode textarea{
+  background:var(--surface2) !important;color:var(--text) !important;}
+
+</style>
 </head>
 <body>
 
@@ -461,19 +704,13 @@
       <button id="backup-now-btn" class="gbtn g" onclick="gdSaveNow()" style="width:100%;justify-content:center;display:none;">📦 שמור גיבוי עכשיו</button>
     </div>
     <div class="card">
-      <div class="ct"><div class="ctb" style="background:var(--er)"></div>🗂️ ניהול נתונים</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button onclick="exportData()" class="gbtn g" style="width:100%;justify-content:center;">📤 ייצוא נתונים (JSON)</button>
-        <button onclick="document.getElementById('import-file').click()" class="gbtn" style="width:100%;justify-content:center;color:var(--ac2);border-color:rgba(59,130,246,.4);">📥 ייבוא נתונים (JSON)</button>
-        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-        <button onclick="hardReset()" class="gbtn d" style="width:100%;justify-content:center;">🗑️ מחיקת כל הנתונים</button>
+      <div class="ct"><div class="ctb" style="background:var(--ac)"></div>📋 היסטוריית גיבויים</div>
+      <div id="backupTabContent" style="margin:-4px -4px 0">
+        <div style="text-align:center;padding:30px;color:var(--tx3)">יש להתחבר לצפייה בגיבויים</div>
       </div>
     </div>
-    <div class="card" id="backup-pwa-card">
-      <div class="ct"><div class="ctb" style="background:var(--ac)"></div>📲 התקנת אפליקציה</div>
-      <button id="pwa-install-btn" onclick="pwaInstall()" style="display:none;width:100%;background:rgba(201,168,76,.12);color:var(--ac);border:1px solid var(--ac);border-radius:var(--rs);padding:11px 20px;font-size:.88rem;cursor:pointer;font-family:var(--fn);font-weight:700;">📲 התקן כאפליקציה</button>
-      <div style="font-size:.8rem;color:var(--tx3);line-height:1.6;">התקן את האפליקציה על המכשיר שלך לגישה מהירה ושימוש ללא אינטרנט.</div>
-    </div>
+
+
   </div>
 
   </div><!-- /wrap -->
@@ -886,7 +1123,9 @@
   </div>
 </div>
 
+
 <script>
+
 // ===================== DATA =====================
 const _initialData = {"titheRate":20,"donationRate":50,"donationPeriodRate":50,"persons":[],"salaries":{},"shonot":[],"nosef":[],"incomeCategories":[],"extras":[],"daniels":[],"miscInc":[],"loans":[],"repayments":[],"redemptions":[],"donations":[],"miscDist":[],"titheEvents":[],"_sv":6,"nextId":100};
 const _saved = (() => { try { return JSON.parse(localStorage.getItem('karenSiua')||'null'); } catch(e){return null;} })();
@@ -1047,33 +1286,33 @@ function exportData() {
   a.click();
   URL.revokeObjectURL(url);
 }
-function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if (!imported.persons && !imported.shonot && !imported.titheRate && !imported._sv) { alert('קובץ לא תקין'); return; }
-      if (!imported.salaries) imported.salaries = {};
-      if (!confirm('לייבא נתונים? זה יחליף את כל הנתונים הנוכחיים.')) return;
-      localStorage.setItem('karenSiua', JSON.stringify(imported));
-      location.reload();
-    } catch(err) { alert('שגיאה בקריאת הקובץ'); }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
+function importData(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{try{
+    const d=JSON.parse(e.target.result);
+    if(!d||typeof d!=='object'){alert('קובץ לא תקין');return;}
+    if(!confirm('לייבא? זה יחליף את כל הנתונים.'))return;
+    d._sv=Math.max(d._sv||0,6);
+    ['shonot','nosef','persons','loans','repayments','redemptions','donations',
+     'miscDist','titheEvents','incomeCategories','extras','daniels','miscInc']
+      .forEach(k=>{if(!Array.isArray(d[k]))d[k]=[];});
+    if(!d.salaries||typeof d.salaries!=='object')d.salaries={};
+    d.titheRate=d.titheRate||20;d.nextId=d.nextId||300;
+    d.nosef.forEach(r=>{if(!r.category)r.category=r.desc||'כללי';});
+    localStorage.setItem('karenSiua',JSON.stringify(d));location.reload();
+  }catch(err){alert('שגיאה: '+err.message);}};
+  reader.readAsText(file);event.target.value='';
 }
-function setTheme(mode) {
-  if (mode==='light') { document.body.classList.add('light'); document.body.classList.remove('dark'); }
-  else { document.body.classList.remove('light'); document.body.classList.add('dark'); }
-  const lBtn = document.getElementById('theme-light');
-  const dBtn = document.getElementById('theme-dark');
-  if (lBtn) lBtn.classList.toggle('active', mode==='light');
-  if (dBtn) dBtn.classList.toggle('active', mode!=='light');
-  state.theme = mode; save();
-  const ap = document.querySelector('.page.active');
-  if (ap) renderPage(ap.id.replace('page-',''));
+function setTheme(mode){
+  if(mode==='light'){document.body.classList.add('light');document.body.classList.remove('dark');}
+  else{document.body.classList.remove('light');document.body.classList.add('dark');}
+  const l=document.getElementById('theme-light'),d2=document.getElementById('theme-dark');
+  if(l)l.classList.toggle('active',mode==='light');
+  if(d2)d2.classList.toggle('active',mode!=='light');
+  state.theme=mode;save();
+  const ap=document.querySelector('.page.active');
+  if(ap)renderPage(ap.id.replace('page-',''));
 }
 function syncSettings(fromId) {
   const map = {
@@ -2469,24 +2708,21 @@ async function gdSave() {
   if (gdDirty) gdSave();
 }
 
-function gdApplyData(d) {
-  if (!d || typeof d !== 'object' || !d._sv) return false;
-  state = d;
-  localStorage.setItem('karenSiua', JSON.stringify(state));
-  return true;
+
+function gdApplyData(d){
+  if(!d||typeof d!=='object'||!d._sv)return false;
+  state=d; localStorage.setItem('karenSiua',JSON.stringify(state)); return true;
 }
-async function gdLoad() {
-  if (!gdToken || !gdFileId) return false;
-  try {
-    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${gdFileId}?alt=media`, {
-      headers: {'Authorization': 'Bearer ' + gdToken}
-    });
-    if (!r.ok) return false;
-    const d = await r.json();
-    if (!gdApplyData(d)) return false;
-    renderAll();
-    return true;
-  } catch(e) { console.error('gdLoad', e); return false; }
+async function gdLoad(){
+  if(!gdToken||!gdFileId)return false;
+  try{
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${gdFileId}?alt=media`,
+      {headers:{'Authorization':'Bearer '+gdToken}});
+    if(!r.ok)return false;
+    const d=await r.json();
+    if(!gdApplyData(d))return false;
+    renderAll();return true;
+  } catch(e) { return false; }
 }
 
 async function gdSync() {
@@ -2559,6 +2795,131 @@ function pwaInstall() {
   deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
 }
 
+async function gdListBackups(){
+  if(!gdToken)return[];
+  try{
+    const q=encodeURIComponent(`name contains '${GD_BACKUP_PREFIX}' and trashed=false`);
+    const r=await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,name,modifiedTime,size)&orderBy=modifiedTime+desc&pageSize=365`,
+      {headers:{'Authorization':'Bearer '+gdToken}});
+    if(r.status===401){
+      // טוקן פג — נסה לרענן ונסה שוב פעם אחת
+      const ok=await gdRefreshToken();
+      if(ok)return gdListBackups();
+      return [];
+    }
+    const j=await r.json();
+    if(j.error){console.warn('gdListBackups error:',j.error);return[];}
+    return(j.files||[]).map(f=>({
+      id:f.id,
+      name:f.name,
+      ts:parseInt(f.name.replace(GD_BACKUP_PREFIX,'').replace('.json','')||'0'),
+      modified:f.modifiedTime,
+      size:f.size,
+    }));
+  }catch{return[];}
+}
+async function renderBackupTab(){
+  const el=$('backupTabContent');
+  if(!el)return;
+  if(!gdToken){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--tx3)">יש להתחבר ל-Google Drive לצפייה בגיבויים</div>';return;}
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--tx3)">⏳ טוען גיבויים...</div>';
+  const backups=await gdListBackups();
+  if(!backups.length){
+    el.innerHTML=`<div style="padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:flex-start;gap:8px"><button class="gbtn g" onclick="gdSaveBackup().then(()=>renderBackupTab())" style="font-size:.75rem;padding:5px 10px">📦 גבה עכשיו</button></div><div style="text-align:center;padding:30px;color:var(--tx3)">אין גיבויים שמורים עדיין</div>`;
+    return;
+  }
+  const current=gdCollectData();
+  let html=`
+    <div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);gap:8px;flex-wrap:wrap">
+      <span style="font-size:.78rem;color:var(--tx3)">${backups.length} גיבויים</span>
+      <div style="display:flex;gap:6px">
+        <button class="gbtn d" id="delSelectedBtn" onclick="gdDeleteSelected()" style="font-size:.72rem;padding:4px 10px;display:none">🗑️ מחק נבחרים</button>
+        <button class="gbtn g" onclick="gdSaveBackup().then(()=>renderBackupTab())" style="font-size:.72rem;padding:4px 10px">📦 גבה עכשיו</button>
+      </div>
+    </div>`;
+  for(const b of backups){
+    const dt=new Date(b.ts||b.modified).toLocaleString('he-IL',{year:'2-digit',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const kb=b.size?Math.round(b.size/1024)+'KB':'';
+    html+=`
+    <div style="border-bottom:1px solid var(--bd);padding:10px 16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <input type="checkbox" class="bk-cb" data-id="${b.id}" onchange="gdUpdateDelBtn()" style="margin-top:3px;width:18px;height:18px;cursor:pointer;accent-color:var(--ac);flex-shrink:0">
+          <div>
+            <div style="font-size:.85rem;font-weight:700;color:var(--tx)">${dt}</div>
+            <div style="font-size:.72rem;color:var(--tx3);margin-top:2px" id="bdiff_${b.id}">⏳ בודק...</div>
+          </div>
+        </div>
+        <span style="font-size:.68rem;color:var(--tx3)">${kb}</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;padding-right:24px">
+        <button class="gbtn" onclick="gdRestoreBackup('${b.id}')" style="font-size:.72rem;padding:4px 10px">⏪ שחזר</button>
+        <button class="gbtn" onclick="gdExportBackup('${b.id}')" style="font-size:.72rem;padding:4px 10px">⬇️ ייצא</button>
+        <button class="gbtn d" onclick="gdDeleteBackupUI('${b.id}')" style="font-size:.72rem;padding:4px 10px">🗑️ מחק</button>
+      </div>
+    </div>`;
+  }
+  el.innerHTML=html;
+  for(const b of backups){
+    gdLoadBackup(b.id).then(data=>{
+      const el2=$('bdiff_'+b.id);
+      if(el2&&data)el2.textContent=_diffData(current,data);
+    });
+  }
+}
+async function gdSaveBackup(){
+  if(!gdToken){toast('⚠️ יש להתחבר ל-Google Drive תחילה','w');return;}
+  if(recs.length===0)return;
+  const ts=Date.now();
+  const name=GD_BACKUP_PREFIX+ts+'.json';
+  const data={...gdCollectData(),_backupTs:ts,_backupLabel:new Date(ts).toLocaleString('he-IL')};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const meta={name,parents:['appDataFolder']};
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+  form.append('file',blob);
+  try{
+    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{
+      method:'POST',headers:{'Authorization':'Bearer '+gdToken},body:form});
+    if(!r.ok){
+      const err=await r.json().catch(()=>({}));
+      if(r.status===401)return; // טוקן פג — בשקט, ייעשה בפעם הבאה
+      toast(`❌ שגיאת גיבוי: ${err?.error?.message||r.status}`,'e');
+      return;
+    }
+    await gdCleanOldBackups();
+    toast('📦 גיבוי נשמר בהצלחה');
+    LS.set('ks_lastAutoBackup',ts);
+  }catch(e){
+    toast(`❌ שגיאת גיבוי: ${e.message}`,'e');
+  }
+}
+async function gdRestoreBackup(id){
+  if(!await confirmAsync('שחזר גיבוי זה?\nהנתונים הנוכחיים יידרסו.'))return;
+  const data=await gdLoadBackup(id);
+  if(!data){toast('❌ שגיאה בטעינת גיבוי','e');return;}
+  // שמור גיבוי מהמצב הנוכחי לפני שחזור
+  await gdSaveBackup();
+  // שחזר
+  if(data.recs)recs=data.recs;
+  if(data.cos)cos=data.cos;
+  if(data.homeRates)homeRates=data.homeRates;
+  if(data.fuelRates)fuelRates=data.fuelRates;
+  if(data.expenses)expenses=data.expenses;
+  if(data.st)st=data.st;
+  LS.set('ks_recs',recs);LS.set('ks_cos',cos);LS.set('ks_hr',homeRates);
+  LS.set('ks_fuel',fuelRates);LS.set('ks_expenses',expenses);LS.set('ks_st',st);
+  recalc();renderAll();renderExp();
+  await gdSaveData();
+  toast('✅ גיבוי שוחזר');
+  renderBackupTab();
+}
+async function gdDeleteBackup(id){
+  if(!gdToken)return;
+  await fetch(`https://www.googleapis.com/drive/v3/files/${id}`,{method:'DELETE',headers:{'Authorization':'Bearer '+gdToken}});
+}
+
 // ===================== INIT =====================
 document.addEventListener('DOMContentLoaded', function() {
   if (!state.shonot) state.shonot = [];
@@ -2569,19 +2930,71 @@ document.addEventListener('DOMContentLoaded', function() {
   ['titheRate','titheRateD'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=state.titheRate; });
   ['donationRate','donationRateD'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=state.donationRate; });
   ['donationPeriodRate','donationPeriodRateD'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=state.donationPeriodRate; });
+
+  const _gdU=localStorage.getItem('ks_gd_user');
+  if(_gdU){gdUserId=_gdU;const _f=localStorage.getItem('ks_gd_'+_gdU+'_fid');if(_f)gdFileId=_f;
+    const _t=sessionStorage.getItem('ks_gd_token'),_e=parseInt(sessionStorage.getItem('ks_gd_expiry')||'0');
+    if(_t&&Date.now()<_e-60000){gdToken=_t;gdTokenExpiry=_e;}}
+  if(typeof syncGdBtn==='function')syncGdBtn();
   loadGroupState();
   setNav('dashboard');
-  if(state.theme) setTheme(state.theme); else setTheme('dark');
+  if(state.theme==='light') setTheme('light');
   renderDashboard();
   // restore GD user if was logged in
   const _gdUser = localStorage.getItem('ks_gd_user');
   if (_gdUser) { gdUserId = _gdUser; const fid = localStorage.getItem(gdUserKey('fid')); if(fid) gdFileId = fid; }
   renderGdUI();
 });
-</script>
-</script>
 
-  <script>
+</script>
+<script>
+
+(function(){
+  function makeIcon(size) {
+    var c = document.createElement("canvas");
+    c.width = c.height = size;
+    var x = c.getContext("2d");
+    x.fillStyle = "#0f1117";
+    x.fillRect(0, 0, size, size);
+    x.fillStyle = "#c9a84c";
+    x.beginPath();
+    x.arc(size/2, size/2, size*0.46, 0, Math.PI*2);
+    x.fill();
+    x.fillStyle = "#0f1117";
+    x.font = "bold " + Math.round(size*0.38) + "px serif";
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.fillText("קס", size/2, size*0.52);
+    return c.toDataURL("image/png");
+  }
+  var base = location.pathname.endsWith("/")
+    ? location.pathname
+    : location.pathname.split("/").slice(0,-1).join("/") + "/";
+  // Inline manifest — works on ANY domain without external manifest.json file
+  const manifest = {
+    name: 'קרן סיוע',
+    short_name: 'קרן סיוע',
+    description: 'מערכת ניהול קרן סיוע',
+    start_url: base,
+    scope: base,
+    display: 'standalone',
+    background_color: '#0f1117',
+    theme_color: '#c9a84c',
+    dir: 'rtl',
+    lang: 'he',
+    orientation: 'portrait',
+    icons: [
+      { src: makeIcon(192), sizes: '192x192', type: 'image/png' },
+      { src: makeIcon(512), sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+  document.getElementById('pwaManifest').href = URL.createObjectURL(blob);
+})();
+
+</script>
+<script>
+
   // ══ NEW NAVIGATION ══
   function openMenuDrawer() {
     document.getElementById('menuDrawer').classList.add('open');
@@ -2697,8 +3110,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // KPI render override — use new kpi-card classes
   var _kpiRendered = false;
-  </script>
+  
+</script>
 <script>
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       var base = location.pathname.endsWith('/')
@@ -2714,22 +3129,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(function() {});
     });
   }
-  </script>
-<!-- ══ DIAGNOSTICS PANEL ══ -->
-<div id="diag-fab" onclick="diagToggle()" style="position:fixed;bottom:80px;left:12px;z-index:9999;width:44px;height:44px;border-radius:50%;background:#e05260;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.5);border:none;font-weight:700;">🔍</div>
-<div id="diag-panel" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#0a0e14;border-top:2px solid #e05260;max-height:65vh;overflow-y:auto;padding:12px;font-family:monospace;font-size:11px;color:#e2eaf4;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <b style="color:#e05260;font-size:13px;">🔍 דיאגנוסטיקה</b>
-    <div style="display:flex;gap:6px;">
-      <button onclick="diagRefresh()" style="background:#1c2330;border:1px solid #2a3547;color:#00c896;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">🔄 רענן</button>
-      <button onclick="diagCopy()" style="background:#1c2330;border:1px solid #2a3547;color:#f59e0b;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">📋 העתק</button>
-      <button onclick="diagToggle()" style="background:#1c2330;border:1px solid #2a3547;color:#8899b0;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">✕</button>
-    </div>
-  </div>
-  <pre id="diag-output" style="margin:0;white-space:pre-wrap;line-height:1.6;"></pre>
-</div>
-
+  
+</script>
 <script>
+
 // ══ DIAGNOSTICS ══
 let diagLog = [];
 let _deferredForDiag = null;
@@ -2856,6 +3259,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     diagRefresh();
   }
 }, true); // capture phase so it runs before other listeners
+
 </script>
 </body>
 </html>
